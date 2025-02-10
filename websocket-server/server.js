@@ -299,8 +299,6 @@ socket.on("movePlayer", async (data) => {
             console.log(`✅ サーバーの rooms[${data.room}] を最新データに統合:`, JSON.stringify(rooms[data.room], null, 2));
             
             console.log(`✅ サーバーの rooms[${data.room}] を最新データに更新:`, rooms[data.room]);
-
-            // 🔹 再取得後に `movePlayer` の処理を続ける
         } catch (error) {
             console.error("❌ session.php 取得エラー:", error.message);
             return;
@@ -309,6 +307,21 @@ socket.on("movePlayer", async (data) => {
 
     // ✅ `rooms` にプレイヤーが登録されているはず
     let player = rooms[data.room][data.id];
+    if (!rooms[data.room]) {
+        console.error(`❌ movePlayer: ルーム ${data.room} が存在しません`);
+        return;
+    }
+    
+    if (!rooms[data.room].players) {
+        console.error(`❌ movePlayer: ルーム ${data.room} の players が undefined です`);
+        return;
+    }
+    
+    if (!rooms[data.room].players[data.id]) {
+        console.error(`❌ movePlayer: プレイヤー ${data.id} が rooms[${data.room}] に存在しません`);
+        console.log(`📡 rooms[${data.room}] の現在の状態:`, JSON.stringify(rooms[data.room], null, 2));
+        return;
+    }    
     if (!player) {
         console.error(`❌ movePlayer の処理継続失敗: プレイヤー ${data.id} が rooms に存在しません`);
         return;
