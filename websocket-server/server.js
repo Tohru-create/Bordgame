@@ -263,9 +263,8 @@ socket.on("movePlayer", async (data) => {
     console.log(`📡 movePlayer 受信 - rooms[${data.room}][${data.id}] の状態:`, rooms[data.room]?.[data.id]);
 
 
-    if (!rooms[data.room] || !rooms[data.room][data.id]) {
-        console.warn(`⚠️ rooms にプレイヤー ${data.id} が存在しません。session.php から再取得を試みます`);
-
+    if (!rooms[data.room] || !rooms[data.room].players || !rooms[data.room].players[data.id]) {
+        console.warn(`⚠️ rooms[${data.room}].players にプレイヤー ${data.id} が存在しません。session.php から再取得を試みます`);
         try {
             const response = await axios.post(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${data.room}`, 
                 new URLSearchParams({ token: data.token }).toString(), {
@@ -298,8 +297,10 @@ socket.on("movePlayer", async (data) => {
                 rooms[data.room].players[player.id].socketId = rooms[data.room].players[player.id].socketId || null; // 既存の socketId を維持
             });
             
-            console.log(`✅ サーバーの rooms[${data.room}] を最新データに統合:`, JSON.stringify(rooms[data.room], null, 2));
-            
+            console.log(`📡 movePlayer 受信 - rooms[${data.room}] の状態:`, JSON.stringify(rooms[data.room], (key, value) => {
+                if (key === "timer") return undefined; // `timer` プロパティを削除
+                return value;
+            }, 2)); 
             console.log(`✅ サーバーの rooms[${data.room}] を最新データに更新:`, rooms[data.room]);
         } catch (error) {
             console.error("❌ session.php 取得エラー:", error.message);
