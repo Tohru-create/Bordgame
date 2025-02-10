@@ -207,8 +207,10 @@ socket.on("viewMap", async (data) => {
                 return;
             }
         
-            console.log("📡 session.php のレスポンス:", JSON.stringify(response.data, (key, value) =>
-                (value && value.constructor === Timeout) ? undefined : value, 2)); // `Timeout` を除外
+            console.log(`📡 movePlayer 受信 - rooms[${data.room}] の状態:`, JSON.stringify(rooms[data.room], (key, value) => {
+                if (key === "timer") return undefined; // `timer` プロパティを削除
+                return value;
+            }, 2));           
         
         } catch (error) {
             console.error("❌ session.php 取得エラー:", error.message);
@@ -307,8 +309,8 @@ socket.on("movePlayer", async (data) => {
 
     // ✅ `rooms` にプレイヤーが登録されているはず
     let player = rooms[data.room][data.id];
-    if (!rooms[data.room]) {
-        console.error(`❌ movePlayer: ルーム ${data.room} が存在しません`);
+    if (!rooms[data.room] || !rooms[data.room].players || !rooms[data.room].players[data.id]) {
+        console.warn(`⚠️ rooms[${data.room}].players にプレイヤー ${data.id} が存在しません。session.php から再取得を試みます`);    
         return;
     }
     
