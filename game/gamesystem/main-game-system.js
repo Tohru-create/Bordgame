@@ -4,15 +4,23 @@ let turnTimerInterval = null; // 🎯 インターバル管理用変数
 
 // 🎮 ゲーム開始
 socket.on("startGame", (data) => {
-    if (!data || !data.roomID) {
-        console.error("❌ startGame の roomID が undefined");
+    if (!data || !data.roomID || !data.players) {
+        console.error("❌ startGame のデータが不正:", data);
         return;
     }
 
     console.log(`🎯 ゲーム開始 - ルーム: ${data.roomID}`);
-    activeRoom = data.roomID;
+    console.log("📡 受信したプレイヤーデータ:", data.players);
 
-    console.log("🎮 ゲームが開始されました！");
+    // 🎯 全プレイヤー情報を保存
+    let players = {};
+    data.players.forEach(player => {
+        players[player.id] = player;
+    });
+
+    console.log("✅ 保存したプレイヤーリスト:", players);
+
+    activeRoom = data.roomID;
     document.getElementById("gameStatus").textContent = "🎮 ゲームが開始されました！";
     
     board.style.display = "grid";

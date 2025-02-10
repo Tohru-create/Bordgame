@@ -91,7 +91,10 @@ socket.on("startGame", async (data) => {
             });
 
             // console.log(`✅ ルーム ${room} のプレイヤーリスト:`, rooms[room].players);
-            io.to(room).emit("startGame", { roomID: room });
+            io.to(room).emit("startGame", { 
+                roomID: room, 
+                players: playerData // 全プレイヤーのIDを送信
+            });
             startNewTurn(room);
         }
     } catch (error) {

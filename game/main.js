@@ -18,13 +18,13 @@ window.username = username
 
 
 if (token) {
-    console.log("✅ URL から取得した token:", token);
+    // console.log("✅ URL から取得した token:", token);
     sessionStorage.setItem("playerToken", token);
 } else {
     console.error("❌ トークンが見つかりません");
 }
 if (roomID) {
-    console.log("✅ ルームID取得:", roomID);
+    // console.log("✅ ルームID取得:", roomID);
 } else {
     console.error("❌ ルームIDが見つかりません");
 }
@@ -124,8 +124,8 @@ function drawBoard() {
                     playerElement.textContent = player.username;
 
                     if (player.id === userID) {
-                        console.log(player.id);
-                        console.log(userID);
+                        console.log("🔍 player.id:", player.id, "タイプ:", typeof player.id);
+                        console.log("🔍 userID:", userID, "タイプ:", typeof userID);
                         playerElement.style.backgroundColor = "blue";
                     } else {
                         playerElement.style.backgroundColor = "red";
