@@ -309,7 +309,7 @@ socket.on("movePlayer", async (data) => {
     }
 
     // ✅ `rooms` にプレイヤーが登録されているはず
-    let player = rooms[data.room][data.id];
+    let player = rooms[data.room].players[data.id];
     if (!rooms[data.room] || !rooms[data.room].players || !rooms[data.room].players[data.id]) {
         console.warn(`⚠️ rooms[${data.room}].players にプレイヤー ${data.id} が存在しません。session.php から再取得を試みます`);    
         return;
