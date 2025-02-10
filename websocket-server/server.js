@@ -91,8 +91,11 @@ socket.on("startGame", async (data) => {
             });
 
             // console.log(`✅ ルーム ${room} のプレイヤーリスト:`, rooms[room].players);
-            io.to(room).emit("startGame", { roomID: room });
-            startNewTurn(room);
+            io.to(room).emit("startGame", { 
+                roomID: room, 
+                players: rooms[room].players // プレイヤーリストを含める
+            });
+            startNewTurn(room);            
         }
     } catch (error) {
         console.error(`❌ session.php データ取得エラー:`, error.message);

@@ -30,14 +30,6 @@ if (roomID) {
 }
 socket.on("connect", () => {
     console.log("✅ WebSocket 接続成功");
-    console.log("📡 joinRoom 送信データ:", {
-        room: roomID,
-        playerID: userID,
-        username: username, // 🎯 ここが適切な値か確認！
-        mapID: currentMapID
-    });
-    
-
     if (roomID) {
         console.log(`🔗 WebSocket 経由でルーム ${roomID} に参加`);
         socket.emit("joinRoom", {
