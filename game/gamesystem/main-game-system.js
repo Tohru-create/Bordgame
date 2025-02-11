@@ -14,20 +14,20 @@ socket.on("startGame", (data) => {
 
     // 🎯 全プレイヤー情報を保存
     let players = {};
-    data.players.forEach(player => {
-        players[player.id] = player;
-    });
 
+    Object.entries(data.players).forEach(([playerID, playerData]) => {
+        players[playerID] = {
+            id: playerID, 
+            username: playerData.username
+        };
+    });
     console.log("✅ 保存したプレイヤーリスト:", players);
 
     activeRoom = data.roomID;
     document.getElementById("gameStatus").textContent = "🎮 ゲームが開始されました！";
-    
     board.style.display = "grid";
     drawBoard();
 });
-
-
 
 // 🎯 ターン開始
 socket.on("startTurn", (data) => {

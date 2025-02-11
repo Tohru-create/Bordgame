@@ -187,8 +187,6 @@ function changeMap(mapId) {
     document.getElementById(mapId).classList.add("active");
 }
 
-
-
 // 🎯 ゲーム終了
 socket.on("endGame", () => {
     document.getElementById("gameStatus").textContent = "🛑 ゲームが終了しました";
