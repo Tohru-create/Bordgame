@@ -58,14 +58,17 @@
         <button id="winButton">🏆 </button> 
     </div>
     <div id="hp-container"></div>
-    <div id="inventory" style="display: none;">
-        <h3>インベントリ</h3>
-        <ul>
-            <li>アイテム1</li>
-            <li>アイテム2</li>
-            <li>アイテム3</li>
-        </ul>
+    <div id="inventory-container" style="display: none;">
+        <h2>インベントリ</h2>
+        <ul id="inventory-list"></ul>
+        <div id="inventory-controls">
+            <button id="inventory-prev" onclick="prevInventoryPage()">◀</button>
+            <span id="inventory-page-num">1 / 1</span>
+            <button id="inventory-next" onclick="nextInventoryPage()">▶</button>
+        </div>
+        <button onclick="closeInventory()">閉じる</button>
     </div>
+    
     <p>現在のマップ: <span id="currentMapDisplay">map-01</span></p>
     <p>表示中のマップ: <span id="viewingMapDisplay">map-01</span></p>
 
@@ -88,12 +91,13 @@
     <script src="main.js"></script>
     <script src="moveplayer.js"></script>
     <script src="/bordgame/game/gamesystem/main-game-system.js"></script>
+    <script src="/bordgame/game/cardsystem/all-card.js"></script>
+    <script src="/bordgame/game/cardsystem/give-command.js"></script>
     <script src="/bordgame/game/gamesystem/main-game-system-health-controll.js"></script>
     <script src="/bordgame/game/gamesystem/main-game-system-player-warp.js"></script>
     <script src="/bordgame/game/gamesystem/sub-game-system-inventory.js"></script>
     <script src="/bordgame/game/gamesystem/sub-game-system-rank-calculation.js"></script>
     <script src="/bordgame/game/mapcontroll/map-controll.js"></script>
-    <script src="/bordgame/game/cardsystem/all-card.js"></script>
     <script src="/bordgame/game/cardsystem/main-game-system-card-earn-legendary.js"></script>
     
 </body>

@@ -194,17 +194,55 @@ button {
     left: 50%;
     transform: translateX(-50%);
 }
-#inventory {
-    top: 40%;
+#inventory-container {
+    position: absolute;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    border: 1px solid #000;
-    padding: 10px;
-    width: 200px;
-    background-color: #f9f9f9;
-    position: absolute; /* ここを追加 */
-    z-index: 888;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    max-height: 400px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
 }
+
+#inventory-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#inventory-list li {
+    font-size: 16px;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+#inventory-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+#inventory-controls button {
+    padding: 5px 10px;
+    font-size: 14px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0 5px;
+}
+
+#inventory-controls button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
 
 #controls {
     bottom: 20px;

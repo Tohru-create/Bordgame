@@ -1,5 +1,4 @@
 const allCards = {
-    "008": { name: "冒険者の指南書", points: 50 },
     "009": { name: "勇者の剣", points: 50 },
     "010": { name: "魔法の盾", points: 50 },
     "011": { name: "隠れ家の地図", points: 50 },
@@ -52,7 +51,6 @@ const allCards = {
     "058": { name: "運命のカード", points: 50 },
     "059": { name: "風の精霊", points: 50 },
     "060": { name: "魅惑のポーション", points: 50 },
-
     "061": { name: "幻影の仮面", points: 100 },
     "062": { name: "嵐の予言書", points: 100 },
     "063": { name: "夢見る船", points: 100 },
@@ -68,7 +66,31 @@ const allCards = {
     "073": { name: "終焉のサークレット", points: 100 },
     "074": { name: "鎖の腕輪", points: 100 },
     "075": { name: "宿命のルーン", points: 100 },
-
+    "076": { name: "幻影の刻印", points: 150 },
+    "077": { name: "魔王の刻印", points: 150 },
+    "078": { name: "天使の涙", points: 150 },
+    "079": { name: "呪われし秘宝", points: 150 },
+    "080": { name: "聖騎士の誓約", points: 150 },
+    "081": { name: "永遠の契約", points: 150 },
+    "082": { name: "深淵の囁き", points: 150 },
+    "083": { name: "烈火の紋章", points: 150 },
+    "084": { name: "氷獄の印", points: 150 },
+    "085": { name: "雷神の祝福", points: 150 },
+    "086": { name: "竜の刻印", points: 150 },
+    "087": { name: "戦神の加護", points: 150 },
+    "088": { name: "死者の詠唱", points: 150 },
+    "089": { name: "禁断の果実", points: 150 },
+    "090": { name: "天命の書", points: 150 },
+    "091": { name: "虚無の眼差し", points: 150 },
+    "092": { name: "堕天使の契約", points: 150 },
+    "093": { name: "魔導の宝珠", points: 150 },
+    "094": { name: "幻惑の霧", points: 150 },
+    "095": { name: "希望の灯火", points: 150 },
+    "096": { name: "英雄の証", points: 150 },
+    "097": { name: "地獄の審判", points: 150 },
+    "098": { name: "破滅の預言", points: 150 },
+    "099": { name: "聖女の祈り", points: 150 },
+    "100": { name: "冥界の門", points: 150 },
     "101": { name: "禁忌の呪文書", points: 200 },
     "102": { name: "賢者の杖", points: 200 },
     "103": { name: "天空の宝珠", points: 200 },
@@ -93,7 +115,32 @@ const allCards = {
     "122": { name: "魔神の鎌", points: 200 },
     "123": { name: "無限の鍵", points: 200 },
     "124": { name: "王の王冠", points: 200 },
-    "125": { name: "運命のダイス", points: 200 }
+    "125": { name: "運命のダイス", points: 200 },
+    "126": { name: "深淵の囁き", points: 300 },
+    "127": { name: "天翔ける翼", points: 300 },
+    "128": { name: "堕落の烙印", points: 300 },
+    "129": { name: "聖なる旋律", points: 300 },
+    "130": { name: "夜明けの誓い", points: 300 },
+    "131": { name: "黒炎の呪縛", points: 300 },
+    "132": { name: "悠久の記憶", points: 300 },
+    "133": { name: "白銀の刃", points: 300 },
+    "134": { name: "呪われし偶像", points: 300 },
+    "135": { name: "戦慄の咆哮", points: 300 },
+    "136": { name: "狂気の月", points: 300 },
+    "137": { name: "天罰の槌", points: 300 },
+    "138": { name: "封印されし鍵", points: 300 },
+    "139": { name: "漆黒の契約", points: 300 },
+    "140": { name: "暁光の盾", points: 300 },
+    "141": { name: "影の従者", points: 300 },
+    "142": { name: "不滅の誓約", points: 300 },
+    "143": { name: "魔女の予言", points: 300 },
+    "144": { name: "血塗られた王冠", points: 300 },
+    "145": { name: "雷鳴の軍勢", points: 300 },
+    "146": { name: "孤高の騎士", points: 300 },
+    "147": { name: "死神の微笑", points: 300 },
+    "148": { name: "運命の輪", points: 300 },
+    "149": { name: "太陽神の加護", points: 300 },
+    "150": { name: "終焉の刻", points: 300 }
 };
 
 /**
@@ -101,28 +148,37 @@ const allCards = {
  * @param {string} token - プレイヤーの認証トークン
  * @returns {Promise<Array>} - 持っているカードIDのリスト
  */
+const getInventoryAPI = "https://tohru-portfolio.secret.jp/bordgame/game/gamesystem_php/get_inventory.php";
+
 async function getPlayerCards(token) {
     try {
-        const response = await fetch("https://tohru-portfolio.secret.jp/bordgame/game/gamesystem_php/get_inventory.php", {
+        const response = await fetch(getInventoryAPI, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ token: token }),
+            body: new URLSearchParams({ token: token, room: roomID }),
         });
 
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            const errorText = await response.text();
+            console.error("❌ サーバーからのレスポンスが JSON ではありません:", errorText);
+            return [];
+        }
+
         const data = await response.json();
-        
-        // データが期待通りでない場合のエラー処理
+
         if (!data.success || !Array.isArray(data.cards)) {
             console.error("❌ カードデータ取得失敗:", data.error || "不明なエラー");
             return [];
         }
 
-        return data.cards; // 例: ["009", "013", "023"]
+        return data.cards;
     } catch (error) {
         console.error("❌ カードデータ取得エラー:", error.message);
         return [];
     }
 }
+
 
 /**
  * プレイヤーのカード情報を取得し、名前とポイントをセットで返す

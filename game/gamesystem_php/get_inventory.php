@@ -1,31 +1,50 @@
 <?php
-require_once("db.php"); // データベース接続
+header("Content-Type: application/json");
+include('db.php');
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $token = $_POST["token"];
+// **POST 以外のリクエストをブロック**
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    echo json_encode(["success" => false, "error" => "無効なリクエスト"]);
+    exit;
+}
 
-    if (!$token) {
-        echo json_encode(["success" => false, "error" => "トークンが必要です"]);
-        exit;
-    }
+// **パラメータ取得**
+$room = $_POST["room"] ?? null;
+$token = $_POST["token"] ?? null;
 
-    // トークンをもとにプレイヤー情報を取得
-    $stmt = $pdo->prepare("SELECT id FROM players WHERE token = ?");
+if (!$room || !$token) {
+    echo json_encode(["success" => false, "error" => "room と token が必要です"]);
+    exit;
+}
+
+// **SQLインジェクション防止（room が `room_XXXXX` の形式であるかチェック）**
+if (!preg_match('/^room_[a-zA-Z0-9]+$/', $room)) {
+    echo json_encode(["success" => false, "error" => "無効なルームID"]);
+    exit;
+}
+
+try {
+    // **指定されたルームテーブルからプレイヤーのデータを取得**
+    $stmt = $pdo->prepare("SELECT * FROM `$room` WHERE token = ?");
     $stmt->execute([$token]);
     $player = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$player) {
-        echo json_encode(["success" => false, "error" => "無効なトークン"]);
+        echo json_encode(["success" => false, "error" => "プレイヤーデータが見つかりません"]);
         exit;
     }
 
-    $playerID = $player["id"];
+    // **カードIDのカラムをすべて取得**
+    $ownedCards = [];
+    foreach ($player as $column => $value) {
+        if (strpos($column, "Card_ID_") === 0 && $value > 0) {
+            $ownedCards[] = str_replace("Card_ID_", "", $column); // "Card_ID_001" → "001"
+        }
+    }
 
-    // プレイヤーの所持カードを取得
-    $stmt = $pdo->prepare("SELECT card_id FROM player_cards WHERE player_id = ? AND owned = 1");
-    $stmt->execute([$playerID]);
-    $cards = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-    echo json_encode(["success" => true, "cards" => $cards]);
+    // **JSON レスポンス**
+    echo json_encode(["success" => true, "cards" => $ownedCards]);
+} catch (PDOException $e) {
+    echo json_encode(["success" => false, "error" => "データベースエラー: " . $e->getMessage()]);
 }
 ?>
