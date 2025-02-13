@@ -1,5 +1,4 @@
 const winButton = document.getElementById("winButton");
-
 if (winButton) {
     winButton.addEventListener("click", () => {
         if (!roomID || !playerToken || !currentPlayer) {
@@ -18,7 +17,6 @@ if (winButton) {
 // 🎯 サーバーからランキングデータを受信
 socket.on("gameOver", (data) => {
     console.log(`📡 ゲーム終了: Winner=${data.winnerId}`);
-
     const rankingTable = document.getElementById("rankingTable");
     rankingTable.innerHTML = "";
 
@@ -34,7 +32,6 @@ socket.on("gameOver", (data) => {
 
     // 🎯 ランキング画面を表示
     document.getElementById("rankingScreen").style.display = "block";
-
     // 🎯 各プレイヤーに勝敗を表示
     if (currentPlayer.id === data.winnerId) {
         document.getElementById("winScreen").style.display = "block";
@@ -45,11 +42,11 @@ socket.on("gameOver", (data) => {
     // 🎯 ゲーム終了後の処理（5秒後にゲームリセット）
     setTimeout(() => {
         window.location.reload();
-    }, 5000);
+    }, 10000);
 });
 
 // 🎯 ランキングを閉じる関数
 function closeRanking() {
     document.getElementById("rankingScreen").style.display = "none";
-    window.location.reload();
+    // window.location.reload();
 }

@@ -383,7 +383,8 @@ socket.on("receiveCard", async (data) => {
     });
 });
 
-// 🎯 勝者決定処理
+// 勝利後
+const { getPlayerCardsForRanking } = require("../game/cardsystem/all-card.js"); // 🔥 修正
 socket.on("declareWinner", async (data) => {
     if (!data.room || !data.winnerId || !rooms[data.room]) {
         console.error("❌ 無効な勝利通知:", data);
@@ -407,7 +408,7 @@ socket.on("declareWinner", async (data) => {
         for (let player of players) {
             let totalPoints = 0;
 
-            // 🎯 ランキング用のカードデータ取得
+            // 🎯 get_inventory.php を使ってカードデータを取得
             const playerCards = await getPlayerCardsForRanking(player.id, data.room);
             if (playerCards.length > 0) {
                 for (let cardID of playerCards) {
@@ -442,11 +443,12 @@ socket.on("declareWinner", async (data) => {
         setTimeout(() => {
             console.log(`🗑️ ルーム ${data.room} を削除`);
             delete rooms[data.room];
-        }, 5000);
+        }, 10000);
     } catch (error) {
-        console.error("❌ session.php 取得エラー:", error.message);
+        console.error("❌ get_inventory.php 取得エラー:", error.message);
     }
 });
+
 
 // 🎯 ゲーム終了処理
 socket.on("endGame", (data) => {

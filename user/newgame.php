@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             mapID VARCHAR(20) NOT NULL DEFAULT 'map-01', -- ✅ 追加: プレイヤーのいるマップを記録
             hp INT DEFAULT 10 CHECK (hp BETWEEN 0 AND 10),
             token VARCHAR(32) UNIQUE NOT NULL,
-            playersize ENUM('small', 'normal', 'big') DEFAULT 'normal',
+            energy INT DEFAULT 0 CHECK (energy >= 0 AND energy <= 100),
             Card_ID_001 BOOLEAN DEFAULT FALSE,
             Card_ID_002 BOOLEAN DEFAULT FALSE,
             Card_ID_003 BOOLEAN DEFAULT FALSE,
@@ -168,8 +168,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             Card_ID_147 INT DEFAULT 0 CHECK (Card_ID_147 >= 0),
             Card_ID_148 INT DEFAULT 0 CHECK (Card_ID_148 >= 0),
             Card_ID_149 INT DEFAULT 0 CHECK (Card_ID_149 >= 0),
-            Card_ID_150 INT DEFAULT 0 CHECK (Card_ID_150 >= 0)
-            Card_ID_0000 INT DEFAULT 0 CHECK (Card_ID_150 >= 0)
+            Card_ID_150 INT DEFAULT 0 CHECK (Card_ID_150 >= 0),
+            Card_ID_999 INT DEFAULT 0 CHECK (Card_ID_999 >= 0)
 
         )";        
         $pdo->exec($sql);

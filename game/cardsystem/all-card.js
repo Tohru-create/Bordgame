@@ -195,9 +195,11 @@ async function getPlayerCardDetails(token) {
         }
     });
 }
+
+
+const axios = require("axios");
 /**
  * ランキング計算専用: プレイヤーの持つカードリストを取得
- * インベントリ表示用の `getPlayerCards()` とは分けて使用
  * @param {string} playerID - プレイヤーのID
  * @param {string} roomID - ルームID
  * @returns {Promise<Array>} - 持っているカードIDのリスト
@@ -220,3 +222,4 @@ async function getPlayerCardsForRanking(playerID, roomID) {
         return [];
     }
 }
+module.exports = { getPlayerCardsForRanking };

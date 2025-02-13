@@ -84,3 +84,37 @@ socket.on("endTurn", (data) => {
 
     if (turnTimerInterval) clearInterval(turnTimerInterval);
 });
+socket.on("endGame", () => {
+    document.getElementById("gameStatus").textContent = "🛑 ゲームが終了しました";
+    board.style.display = "none";
+
+    if (!window.roomID) {
+        console.error("roomID が取得できませんでした");
+        return;
+    }
+
+    // `delete.php` に roomID を送信して削除
+    fetch("https://tohru-portfolio.secret.jp/bordgame/admin/delete.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ roomId: window.roomID }) // `window.roomID` を利用
+    })
+    .then(response => response.text()) // まずテキストとして取得
+    .then(text => {
+        try {
+            const data = JSON.parse(text); // JSON に変換
+            if (data.success) {
+                console.log(`ルーム ${window.roomID} 削除完了`);
+            } else {
+                console.error("ルーム削除エラー:", data.error);
+            }
+        } catch (error) {
+            console.error("JSONパースエラー:", text); // 何が返ってきているか表示
+        }
+    })
+    .finally(() => {
+        setTimeout(() => {
+            window.location.href = "https://tohru-portfolio.secret.jp/bordgame/user/login.html";
+        }, 2000); // 2秒後にリダイレクト
+    });
+});
