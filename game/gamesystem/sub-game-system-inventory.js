@@ -40,7 +40,7 @@ async function loadInventory(token) {
     });
 
     const data = await response.json();
-    console.log("📌 [DEBUG] 取得したカードリスト:", data.cards); // **デバッグ**
+    // console.log("📌 [DEBUG] 取得したカードリスト:", data.cards);
 
     if (!data.success) {
         console.error("❌ インベントリ取得失敗:", data.error);
@@ -50,14 +50,15 @@ async function loadInventory(token) {
     // **カードごとの所持枚数をカウント**
     const cardCounts = {};
     data.cards.forEach(id => {
-        if (allCards[id]) {
-            cardCounts[allCards[id].name] = (cardCounts[allCards[id].name] || 0) + 1;
+        let formattedID = id.toString().padStart(3, "0");
+        if (allCards[formattedID]) {
+            cardCounts[allCards[formattedID].name] = (cardCounts[allCards[formattedID].name] || 0) + 1;
         } else {
-            console.warn(`⚠️ 未登録のカードID: ${id}`); // **デバッグ**
+            console.warn(`⚠️ 未登録のカードID: ${formattedID}`);
         }
     });
 
-    console.log("📌 [DEBUG] カウントしたカードリスト:", cardCounts);
+    // console.log("📌 [DEBUG] カウントされたカードリスト:", cardCounts);
 
     // **ページ分割**
     const cardEntries = Object.entries(cardCounts);
@@ -66,6 +67,13 @@ async function loadInventory(token) {
         inventoryPages.push(cardEntries.slice(i, i + cardsPerPage));
     }
 
+    // console.log("📌 [DEBUG] 各ページのカード:", inventoryPages);
+    
+    // **掲載されていないカードを特定**
+    const displayedCards = new Set(inventoryPages.flat().map(entry => entry[0]));
+    const missingCards = Object.keys(cardCounts).filter(card => !displayedCards.has(card));
+    // console.log("⚠️ [DEBUG] 掲載されていないカード:", missingCards);
+    
     currentPage = 0;
     renderInventoryPage();
 }
@@ -81,6 +89,8 @@ function renderInventoryPage() {
         inventoryList.innerHTML = "<li>カードを所持していません</li>";
         return;
     }
+
+    // console.log("📌 [DEBUG] renderInventoryPage で表示するカード:", inventoryPages[currentPage]);
 
     inventoryPages[currentPage].forEach(([name, count]) => {
         const listItem = document.createElement("li");

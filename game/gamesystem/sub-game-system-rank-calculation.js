@@ -15,17 +15,41 @@ if (winButton) {
     });
 }
 
-// 🎯 サーバーから勝敗通知を受信
+// 🎯 サーバーからランキングデータを受信
 socket.on("gameOver", (data) => {
     console.log(`📡 ゲーム終了: Winner=${data.winnerId}`);
 
-    // 自分が勝者かどうかを判定
+    const rankingTable = document.getElementById("rankingTable");
+    rankingTable.innerHTML = "";
+
+    data.ranking.forEach((player, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${player.username}</td>
+            <td>${player.totalPoints}</td>
+        `;
+        rankingTable.appendChild(row);
+    });
+
+    // 🎯 ランキング画面を表示
+    document.getElementById("rankingScreen").style.display = "block";
+
+    // 🎯 各プレイヤーに勝敗を表示
     if (currentPlayer.id === data.winnerId) {
         document.getElementById("winScreen").style.display = "block";
     } else {
         document.getElementById("loseScreen").style.display = "block";
     }
 
-    // コントロールを無効化（プレイヤーの移動を禁止）
-    document.getElementById("controls").style.display = "none";
+    // 🎯 ゲーム終了後の処理（5秒後にゲームリセット）
+    setTimeout(() => {
+        window.location.reload();
+    }, 5000);
 });
+
+// 🎯 ランキングを閉じる関数
+function closeRanking() {
+    document.getElementById("rankingScreen").style.display = "none";
+    window.location.reload();
+}

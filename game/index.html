@@ -75,7 +75,21 @@
     
     
     
-    <!-- 勝利/敗北メッセージ -->
+    <!-- 勝利後 -->
+    <div id="rankingScreen" style="display: none;">
+        <h2>🏆 ランキング 🏆</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>順位</th>
+                    <th>プレイヤー名</th>
+                    <th>総合ポイント</th>
+                </tr>
+            </thead>
+            <tbody id="rankingTable"></tbody>
+        </table>
+        <button onclick="closeRanking()">閉じる</button>
+    </div>    
     <div id="winScreen" style="display: none;">
         <h2>🎉 勝利！おめでとうございます！ 🎉</h2>
     </div>

@@ -149,7 +149,6 @@ const allCards = {
  * @returns {Promise<Array>} - 持っているカードIDのリスト
  */
 const getInventoryAPI = "https://tohru-portfolio.secret.jp/bordgame/game/gamesystem_php/get_inventory.php";
-
 async function getPlayerCards(token) {
     try {
         const response = await fetch(getInventoryAPI, {
@@ -195,4 +194,29 @@ async function getPlayerCardDetails(token) {
             return { name: `不明なカード (${id})`, points: 0 };
         }
     });
+}
+/**
+ * ランキング計算専用: プレイヤーの持つカードリストを取得
+ * インベントリ表示用の `getPlayerCards()` とは分けて使用
+ * @param {string} playerID - プレイヤーのID
+ * @param {string} roomID - ルームID
+ * @returns {Promise<Array>} - 持っているカードIDのリスト
+ */
+async function getPlayerCardsForRanking(playerID, roomID) {
+    try {
+        const response = await axios.post("https://tohru-portfolio.secret.jp/bordgame/game/gamesystem_php/get_inventory.php", 
+            new URLSearchParams({ player_id: playerID, room: roomID }).toString(),
+            { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+        );
+
+        if (!response.data.success || !Array.isArray(response.data.cards)) {
+            console.error(`❌ プレイヤー ${playerID} のカードデータ取得失敗:`, response.data.error || "不明なエラー");
+            return [];
+        }
+
+        return response.data.cards;
+    } catch (error) {
+        console.error(`❌ プレイヤー ${playerID} のカードデータ取得エラー:`, error.message);
+        return [];
+    }
 }

@@ -1,4 +1,5 @@
 const express = require("express");
+const allCards = require("./all-card.js");
 const http = require("http");
 const socketIo = require("socket.io");
 const axios = require("axios");
@@ -382,16 +383,68 @@ socket.on("receiveCard", async (data) => {
 });
 
 // 🎯 勝者決定処理
-socket.on("declareWinner", (data) => {
+socket.on("declareWinner", async (data) => {
     if (!data.room || !data.winnerId || !rooms[data.room]) {
         console.error("❌ 無効な勝利通知:", data);
         return;
     }
 
     console.log(`🏆 ルーム ${data.room} でプレイヤー ${data.winnerId} が勝利`);
-    io.to(data.room).emit("gameOver", { winnerId: data.winnerId });
 
-    delete rooms[data.room];
+    try {
+        // 🎯 ルームのプレイヤーデータを取得
+        const response = await axios.get(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${data.room}`);
+        if (!response.data.success) {
+            console.error("❌ session.php からプレイヤーデータ取得失敗:", response.data.error);
+            return;
+        }
+
+        const players = response.data.players;
+        let ranking = [];
+
+        // 🎯 各プレイヤーのポイントを計算
+        for (let player of players) {
+            let totalPoints = 0;
+
+            // 🎯 ランキング用のカードデータ取得
+            const playerCards = await getPlayerCardsForRanking(player.id, data.room);
+            if (playerCards.length > 0) {
+                for (let cardID of playerCards) {
+                    if (allCards[cardID]) {
+                        totalPoints += allCards[cardID].points;
+                    }
+                }
+            }
+
+            ranking.push({
+                id: player.id,
+                username: player.username,
+                totalPoints: totalPoints
+            });
+        }
+
+        // 🎯 ランキングを降順にソート
+        ranking.sort((a, b) => b.totalPoints - a.totalPoints);
+
+        // 🎯 勝者を決定（総合ポイントが最も高いプレイヤー）
+        const finalWinner = ranking[0].id;
+
+        // 🎯 ゲーム結果を全プレイヤーに送信
+        io.to(data.room).emit("gameOver", {
+            winnerId: finalWinner,
+            ranking: ranking
+        });
+
+        console.log(`🏆 最終勝者: ${finalWinner} (${ranking[0].totalPoints}ポイント)`);
+
+        // 🎯 5秒後にルームデータを削除
+        setTimeout(() => {
+            console.log(`🗑️ ルーム ${data.room} を削除`);
+            delete rooms[data.room];
+        }, 5000);
+    } catch (error) {
+        console.error("❌ session.php 取得エラー:", error.message);
+    }
 });
 
 // 🎯 ゲーム終了処理
