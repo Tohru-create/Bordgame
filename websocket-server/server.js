@@ -1,5 +1,6 @@
 const express = require("express");
-const allCards = require("https://tohru-portfolio.secret.jp/bordgame/game/cardsystem/all-card.js");
+const path = require("path"); 
+const allCards = require(path.join(__dirname, "../game/cardsystem/all-card.js"));
 const http = require("http");
 const socketIo = require("socket.io");
 const axios = require("axios");
