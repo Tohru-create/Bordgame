@@ -26,6 +26,27 @@
         <button id="joinGame">✅ ゲームに参加</button>
     </div>
 
+    <div id="mapSelection" style="display: none;">
+        <p>マップを選択してください</p>
+        <button onclick="changeMap('map-01')">庭</button>
+        <button onclick="changeMap('map-02')">電子世界</button>
+        <button onclick="changeMap('map-03')">ファンタジー</button>
+        <button onclick="changeMap('map-04')">未来都市</button>
+        <button onclick="changeMap('map-05')">お菓子</button>
+        <button onclick="changeMap('map-06')">水中都市</button>
+        <button onclick="changeMap('map-07')">二次元</button>
+        <button onclick="changeMap('map-08')">恐竜</button>
+        <button onclick="changeMap('map-09')">地獄</button>
+    </div>
+
+    <div id="tutorialSelection" style="display: none;">
+        <p>チュートリアルを受けますか？</p>
+        <button onclick="selectTutorial(true)">いる</button>
+        <button onclick="selectTutorial(false)">いらない</button>
+    </div>
+
+    <button id="startGameBtn" onclick="startGame()" disabled>ゲーム開始</button>
+
     <!-- ルーム内のプレイヤー一覧 -->
     <h2>参加者一覧</h2>
     <ul id="playerList"></ul>

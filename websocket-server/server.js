@@ -38,35 +38,43 @@ io.on("connection", async (socket) => {
     socket.handshake.headers["Access-Control-Allow-Credentials"] = "true";
 
     // 🎯 クライアントをルームに参加させる
-socket.on("joinRoom", (data) => {
-    console.log("📡 joinRoom 受信:", data);
-    
-    if (!data.room || !data.playerID) {
-        console.error("❌ joinRoom に無効なデータ:", data);
-        return;
-    }
+    socket.on("joinRoom", (data) => {
+        console.log("📡 joinRoom 受信:", data);
 
-    socket.join(data.room);
-    
-    if (!rooms[data.room]) {
-        rooms[data.room] = {};
-    }
+        if (!data.room || !data.playerID) {
+            console.error("❌ joinRoom に無効なデータ:", data);
+            return;
+        }
 
-    rooms[data.room][data.playerID] = {
-        id: data.playerID,
-        username: data.username || `Player${data.playerID}`,
-        x: 0,
-        y: 0,
-        mapID: data.mapID,
-        socketId: socket.id,
-    };
+        socket.join(data.room);
 
-    console.log("✅ 現在の rooms:", JSON.stringify(rooms, null, 2));
-    io.to(data.room).emit("updatePlayers", {
-        roomID: data.room,
-        players: Object.values(rooms[data.room])
+        if (!rooms[data.room]) {
+            rooms[data.room] = {
+                host: data.playerID, // ルームが初めて作成される場合、最初のプレイヤーをホストに設定
+                players: {}
+            };
+        }
+
+        rooms[data.room].players[data.playerID] = {
+            id: data.playerID,
+            username: data.username || `Player${data.playerID}`,
+            x: 0,
+            y: 0,
+            mapID: data.mapID,
+            socketId: socket.id,
+        };
+
+        console.log("✅ 現在の rooms:", JSON.stringify(rooms, null, 2));
+
+        // ルーム内のプレイヤー情報を全員に送信
+        io.to(data.room).emit("updatePlayers", {
+            roomID: data.room,
+            players: Object.values(rooms[data.room].players),
+            host: rooms[data.room].host // ホスト情報をクライアントに送信
     });
 });
+
+
 const TURN_DURATION = 60000; // 60秒
 // 🎮 ゲームスタート時に最初のターンを開始
 socket.on("startGame", async (data) => {

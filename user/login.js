@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const usernameSection = document.getElementById("usernameSection");
     const playerList = document.getElementById("playerList");
 
-    // 🎯 ボタンの存在を確認（nullチェック）
     if (!newGameBtn || !joinGameBtn || !copyLinkBtn) {
         console.error("❌ 必要なボタンが見つかりません");
         return;
@@ -16,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let roomID = new URLSearchParams(window.location.search).get("room");
     let token = sessionStorage.getItem("playerToken");
+    let isHost = false; // 🎯 追加: ホスト判定用
 
     if (roomID) {
         console.log(`✅ ルームID取得: ${roomID}`);
@@ -24,11 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
         roomSection.style.display = "block";
         usernameSection.style.display = "block";
 
-        // 🎯 ルーム内のプレイヤー一覧を取得
         fetch(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${roomID}`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ token: token || "" })  // トークンがある場合は送信
+            body: new URLSearchParams({ token: token || "" })
         })
         .then(response => response.json())
         .then(data => {
@@ -41,9 +40,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     playerList.appendChild(li);
                 });
 
-                // 🎯 自分の情報を sessionStorage に保存
+                // 🎯 ホスト情報を取得
+                if (data.host) {
+                    sessionStorage.setItem("roomHost", data.host);
+                    if (data.host === sessionStorage.getItem("playerID")) {
+                        isHost = true;
+                        console.log("🏆 あなたはホストです！");
+                    }
+                }
+
                 if (data.currentPlayer) {
                     sessionStorage.setItem("playerToken", data.currentPlayer.token);
+                    sessionStorage.setItem("playerID", data.currentPlayer.id);
                 }
             } else {
                 console.error("❌ session.php のエラー:", data.error);
@@ -55,9 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🎯 NewGame（新しいゲームルームを作成）
     newGameBtn.addEventListener("click", () => {
         console.log("🎮 NewGame ボタンが押されました");
-        fetch("newgame.php", {
-            method: "POST"
-        })
+        fetch("newgame.php", { method: "POST" })
         .then(response => response.json())
         .then(data => {
             console.log("📡 newgame.php のレスポンス:", data);
@@ -70,12 +76,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     console.error("❌ クリップボードへのコピーに失敗しました:", err);
                 });
 
-                // 🎯 ルームIDとセクションを表示
+                // 🎯 ルームIDとホスト情報を保存
                 roomID = data.roomID;
                 document.getElementById("roomID").textContent = roomID;
                 document.getElementById("inviteLink").href = inviteURL;
                 roomSection.style.display = "block";
                 usernameSection.style.display = "block";
+
+                sessionStorage.setItem("roomHost", sessionStorage.getItem("playerID"));
+                isHost = true;
             } else {
                 console.error("エラー: " + data.error);
             }
@@ -103,7 +112,8 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("📡 join_game.php のレスポンス:", data);
             if (data.success) {
                 console.log(`✅ ${username} がルーム ${roomID} に登録完了`);
-                sessionStorage.setItem("playerToken", data.token);  // 🎯 トークンを保存
+                sessionStorage.setItem("playerToken", data.token);
+                sessionStorage.setItem("playerID", data.playerID); // 🎯 参加者のIDを保存
                 window.location.href = data.redirect;
             } else {
                 alert(data.error);
@@ -125,4 +135,15 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("ルームIDがありません");
         }
     });
+
+    // 🎯 ホストの判定処理
+    function checkIfHost() {
+        const storedHost = sessionStorage.getItem("roomHost");
+        if (storedHost === sessionStorage.getItem("playerID")) {
+            isHost = true;
+            console.log("🏆 あなたはホストです！");
+        }
+    }
+
+    checkIfHost();
 });

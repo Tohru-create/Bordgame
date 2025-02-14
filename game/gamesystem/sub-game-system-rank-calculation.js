@@ -38,11 +38,6 @@ socket.on("gameOver", (data) => {
     } else {
         document.getElementById("loseScreen").style.display = "block";
     }
-
-    // 🎯 ゲーム終了後の処理（5秒後にゲームリセット）
-    setTimeout(() => {
-        window.location.reload();
-    }, 10000);
 });
 
 // 🎯 ランキングを閉じる関数
