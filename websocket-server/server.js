@@ -440,12 +440,6 @@ socket.on("declareWinner", async (data) => {
         });
 
         console.log(`🏆 最終勝者: ${finalWinner} (${ranking[0].totalPoints}ポイント)`);
-
-        // 🎯 5秒後にルームデータを削除
-        setTimeout(() => {
-            console.log(`🗑️ ルーム ${data.room} を削除`);
-            delete rooms[data.room];
-        }, 10000);
     } catch (error) {
         console.error("❌ get_inventory.php 取得エラー:", error.message);
     }
