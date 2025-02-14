@@ -201,25 +201,26 @@ async function getPlayerCardDetails(token) {
  * @param {Object} axiosInstance - `server.js` から渡された `axios`
  */
 module.exports = (axiosInstance) => {
-    async function getPlayerCardsForRanking(playerID, roomID) {
+    async function getPlayerCardsForRanking(playerID, roomID, playerToken) {
         try {
             const response = await axiosInstance.post(
                 "https://tohru-portfolio.secret.jp/bordgame/game/gamesystem_php/get_inventory.php",
-                new URLSearchParams({ player_id: playerID, room: roomID }).toString(),
+                new URLSearchParams({ player_id: playerID, room: roomID, token: playerToken }).toString(), // ✅ `token` を追加
                 { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
             );
-
+    
             if (!response.data.success || !Array.isArray(response.data.cards)) {
                 console.error(`❌ プレイヤー ${playerID} のカードデータ取得失敗:`, response.data.error || "不明なエラー");
                 return [];
             }
-
+    
             return response.data.cards;
         } catch (error) {
             console.error(`❌ プレイヤー ${playerID} のカードデータ取得エラー:`, error.message);
             return [];
         }
     }
+    
 
     return { getPlayerCardsForRanking, allCards };
 };

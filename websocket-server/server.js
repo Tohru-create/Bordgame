@@ -409,7 +409,7 @@ socket.on("declareWinner", async (data) => {
             let totalPoints = 0;
 
             // 🎯 `getPlayerCardsForRanking` を使用してカードデータを取得
-            const playerCards = await getPlayerCardsForRanking(player.id, data.room);
+            const playerCards = await getPlayerCardsForRanking(player.id, data.room, player.token);
             console.log(`📌 プレイヤー ${player.id} のカード一覧:`, playerCards);
 
             if (playerCards.length > 0) {
