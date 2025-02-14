@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require("path"); 
-const allCards = require(path.join(__dirname, "../game/cardsystem/all-card.js"));
+const { getPlayerCardsForRanking, allCards } = require(path.join(__dirname, "../game/cardsystem/all-card.js"));
 const http = require("http");
 const socketIo = require("socket.io");
 const axios = require("axios");
@@ -407,9 +407,12 @@ socket.on("declareWinner", async (data) => {
         // 🎯 各プレイヤーのポイントを計算
         for (let player of players) {
             let totalPoints = 0;
-
-            // 🎯 get_inventory.php を使ってカードデータを取得
-            const playerCards = await getPlayerCardsForRanking(player.id, data.room);
+            try {
+                const playerCards = await getPlayerCardsForRanking(player.id, data.room);
+                console.log(`📌 プレイヤー ${player.id} のカード一覧:`, playerCards);
+            } catch (error) {
+                console.error(`❌ ${player.id} のカード取得エラー:`, error.message);
+            }            
             if (playerCards.length > 0) {
                 for (let cardID of playerCards) {
                     if (allCards[cardID]) {
