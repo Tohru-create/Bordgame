@@ -1,12 +1,28 @@
 document.addEventListener("DOMContentLoaded", () => {
     console.log("📌 login.js ロード完了");
+    // 🎯 リロード時に `sessionStorage` をクリアする処理
+    if (sessionStorage.getItem("reloadFlag")) {
+        console.log("🔄 ページがリロードされたため、sessionStorage をクリアします");
+        sessionStorage.clear();  // 全ての `sessionStorage` データを消去
+        sessionStorage.removeItem("reloadFlag"); // フラグを削除
+    }
 
+    // 🎯 `beforeunload` を使ってリロード時に `reloadFlag` を設定
+    window.addEventListener("beforeunload", () => {
+        sessionStorage.setItem("reloadFlag", "true"); // 次回ロード時に判定するためのフラグ
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const isHoststats = urlParams.get("host");
     const newGameBtn = document.getElementById("newGame");
     const joinGameBtn = document.getElementById("joinGame");
     const copyLinkBtn = document.getElementById("copyLink");
     const roomSection = document.getElementById("roomSection");
     const usernameSection = document.getElementById("usernameSection");
     const playerList = document.getElementById("playerList");
+    const mapSelection = document.getElementById("mapSelection"); 
+    const tittleSection = document.getElementById("tittleSection"); 
+    const tutorialSelection = document.getElementById("tutorialSelection"); 
 
     if (!newGameBtn || !joinGameBtn || !copyLinkBtn) {
         console.error("❌ 必要なボタンが見つかりません");
@@ -16,11 +32,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let roomID = new URLSearchParams(window.location.search).get("room");
     let token = sessionStorage.getItem("playerToken");
     let isHost = false; // 🎯 追加: ホスト判定用
+    
 
     if (roomID) {
         console.log(`✅ ルームID取得: ${roomID}`);
         document.getElementById("roomID").textContent = roomID;
-        document.getElementById("inviteLink").href = `https://tohru-portfolio.secret.jp/bordgame/user/login.html?room=${roomID}`;
+        document.getElementById("inviteLink").href = `https://tohru-portfolio.secret.jp/bordgame/user/login.html?room=${roomID}&host=false`;
         roomSection.style.display = "block";
         usernameSection.style.display = "block";
 
@@ -40,15 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     playerList.appendChild(li);
                 });
 
-                // 🎯 ホスト情報を取得
-                if (data.host) {
-                    sessionStorage.setItem("roomHost", data.host);
-                    if (data.host === sessionStorage.getItem("playerID")) {
-                        isHost = true;
-                        console.log("🏆 あなたはホストです！");
-                    }
-                }
-
                 if (data.currentPlayer) {
                     sessionStorage.setItem("playerToken", data.currentPlayer.token);
                     sessionStorage.setItem("playerID", data.currentPlayer.id);
@@ -59,17 +67,35 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch(error => console.error("❌ session.php 取得エラー:", error));
     }
+    if (isHoststats === "false") {
+        console.log("🚫 招待リンクからのアクセスなので、roomHost を false に上書き");
+        sessionStorage.setItem("roomHost", "false");
+        console.log("📡 `sessionStorage` に保存直後の roomHost:", sessionStorage.getItem("roomHost"));
+    }
 
+    // 🎯 ホストかどうかを判定
+    if (sessionStorage.getItem("roomHost") === "true") {
+        console.log("🏆 あなたはホストです！");
+        document.getElementById("mapSelection").style.display = "block";
+    } else {
+        console.log("🚫 あなたはホストではありません");
+        document.getElementById("mapSelection").style.display = "none";
+    }
     // 🎯 NewGame（新しいゲームルームを作成）
     newGameBtn.addEventListener("click", () => {
         console.log("🎮 NewGame ボタンが押されました");
+
         fetch("newgame.php", { method: "POST" })
         .then(response => response.json())
         .then(data => {
             console.log("📡 newgame.php のレスポンス:", data);
             if (data.success) {
                 console.log(`✅ 新しいルームID: ${data.roomID}`);
-                const inviteURL = `https://tohru-portfolio.secret.jp/bordgame/user/login.html?room=${data.roomID}`;
+                
+                sessionStorage.setItem("roomHost", "true"); 
+                isHost = true;
+
+                const inviteURL = `https://tohru-portfolio.secret.jp/bordgame/user/login.html?room=${data.roomID}&host=false`;
                 navigator.clipboard.writeText(inviteURL).then(() => {
                     console.log("招待リンクがクリップボードにコピーされました: " + inviteURL);
                 }).catch(err => {
@@ -78,19 +104,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // 🎯 ルームIDとホスト情報を保存
                 roomID = data.roomID;
+
+                // 🎯 UIの更新
                 document.getElementById("roomID").textContent = roomID;
                 document.getElementById("inviteLink").href = inviteURL;
                 roomSection.style.display = "block";
                 usernameSection.style.display = "block";
-
-                sessionStorage.setItem("roomHost", sessionStorage.getItem("playerID"));
-                isHost = true;
             } else {
                 console.error("エラー: " + data.error);
             }
         })
         .catch(error => console.error("❌ newgame.php 取得エラー:", error));
     });
+
+    // 🎯 ホストの判定処理
+    function checkIfHost() {
+        const storedHost = sessionStorage.getItem("roomHost");
+        if (storedHost === sessionStorage.getItem("playerID")) {
+            isHost = true;
+            console.log("🏆 あなたはホストです！");
+            mapSelection.style.display = "block"; // 🎯 ホストならマップ選択を表示
+        }
+    }
+    checkIfHost();
+    
 
     // 🎯 ゲームに参加
     joinGameBtn.addEventListener("click", () => {
@@ -99,7 +136,6 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("ユーザーネームを入力してください");
             return;
         }
-
         console.log(`✅ ${username} がゲームに参加`);
 
         fetch("join_game.php", {
@@ -114,18 +150,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log(`✅ ${username} がルーム ${roomID} に登録完了`);
                 sessionStorage.setItem("playerToken", data.token);
                 sessionStorage.setItem("playerID", data.playerID); // 🎯 参加者のIDを保存
-                window.location.href = data.redirect;
             } else {
                 alert(data.error);
             }
         })
         .catch(error => console.error("❌ join_game.php 取得エラー:", error));
+        if (isHost) {
+            tittleSection.style.display = "none";
+            newGameBtn.style.display = "none";
+            usernameSection.style.display = "none";
+            roomSection.style.display = "none";
+            mapSelection.style.display = "block"; // ホストのみマップ選択を表示
+            tutorialSelection.style.display = "block"; 
+        }
     });
 
     // 🎯 招待リンクをコピー
     copyLinkBtn.addEventListener("click", () => {
         if (roomID) {
-            const inviteURL = `https://tohru-portfolio.secret.jp/bordgame/user/login.html?room=${roomID}`;
+            const inviteURL = `https://tohru-portfolio.secret.jp/bordgame/user/login.html?room=${roomID}&host=false`;
             navigator.clipboard.writeText(inviteURL).then(() => {
                 alert("招待リンクがクリップボードにコピーされました: " + inviteURL);
             }).catch(err => {

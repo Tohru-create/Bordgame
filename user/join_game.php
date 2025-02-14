@@ -30,22 +30,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(':token', $token, PDO::PARAM_STR);
         $stmt->execute();
 
-        // 🎯 セッションにユーザー情報を保存
-        session_start();
-        $_SESSION["user_id"] = $pdo->lastInsertId();
-        $_SESSION["username"] = $username;
-        $_SESSION["token"] = $token;
-        $_SESSION["roomID"] = $roomID;
-        $user_id = $_SESSION["user_id"]; // user_idを取得
-
+        // 🎯 ユーザー情報をJSONで返す（リダイレクトなし）
         echo json_encode([
             "success" => true,
-            "token" => $token,
-            "redirect" => "https://tohru-portfolio.secret.jp/bordgame/game/index.html?room=$roomID&token=$token&user_id=$user_id&username=$username"
+            "message" => "ユーザーがルームに登録されました",
+            "roomID" => $roomID,
+            "username" => $username,
+            "token" => $token
         ]);
 
     } catch (PDOException $e) {
         echo json_encode(["success" => false, "error" => "データベースエラー: " . $e->getMessage()]);
     }
 }
+//             "redirect" => "https://tohru-portfolio.secret.jp/bordgame/game/index.html?room=$roomID&token=$token&user_id=$user_id&username=$username"
 ?>

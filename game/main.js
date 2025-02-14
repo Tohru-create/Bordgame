@@ -187,12 +187,6 @@ function changeMap(mapId) {
     document.getElementById(mapId).classList.add("active");
 }
 
-// 🎯 ゲーム終了
-socket.on("endGame", () => {
-    document.getElementById("gameStatus").textContent = "🛑 ゲームが終了しました";
-    board.style.display = "none";
-});
-
 // 🎯 カードやイベント処理
 const moveForwardButton = document.getElementById("moveForward");
 const moveBackwardButton = document.getElementById("moveBackward");
