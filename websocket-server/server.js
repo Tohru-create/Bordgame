@@ -385,7 +385,6 @@ socket.on("receiveCard", async (data) => {
 });
 
 // 勝利後
-const { getPlayerCardsForRanking } = require("../game/cardsystem/all-card.js"); // 🔥 修正
 socket.on("declareWinner", async (data) => {
     if (!data.room || !data.winnerId || !rooms[data.room]) {
         console.error("❌ 無効な勝利通知:", data);
@@ -408,12 +407,11 @@ socket.on("declareWinner", async (data) => {
         // 🎯 各プレイヤーのポイントを計算
         for (let player of players) {
             let totalPoints = 0;
-            try {
-                const playerCards = await getPlayerCardsForRanking(player.id, data.room);
-                console.log(`📌 プレイヤー ${player.id} のカード一覧:`, playerCards);
-            } catch (error) {
-                console.error(`❌ ${player.id} のカード取得エラー:`, error.message);
-            }            
+
+            // 🎯 `getPlayerCardsForRanking` を使用してカードデータを取得
+            const playerCards = await getPlayerCardsForRanking(player.id, data.room);
+            console.log(`📌 プレイヤー ${player.id} のカード一覧:`, playerCards);
+
             if (playerCards.length > 0) {
                 for (let cardID of playerCards) {
                     if (allCards[cardID]) {
