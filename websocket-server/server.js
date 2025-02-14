@@ -1,9 +1,10 @@
 const express = require("express");
 const path = require("path"); 
-const { getPlayerCardsForRanking, allCards } = require(path.join(__dirname, "../game/cardsystem/all-card.js"));
+const axios = require("axios");  // ✅ `axios` を `server.js` でロード
+const allCardModule = require(path.join(__dirname, "../game/cardsystem/all-card.js"))(axios); // ✅ `axios` を渡す
+const { getPlayerCardsForRanking, allCards } = allCardModule;
 const http = require("http");
 const socketIo = require("socket.io");
-const axios = require("axios");
 const cors = require("cors");
 
 const app = express();

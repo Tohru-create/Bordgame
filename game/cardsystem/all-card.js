@@ -196,32 +196,30 @@ async function getPlayerCardDetails(token) {
     });
 }
 
-const axios = require("axios");
-
 /**
- * ランキング計算専用: プレイヤーの持つカードリストを取得
- * @param {string} playerID - プレイヤーのID
- * @param {string} roomID - ルームID
- * @returns {Promise<Array>} - 持っているカードIDのリスト
+ * `server.js` から渡された `axios` を使用する
+ * @param {Object} axiosInstance - `server.js` から渡された `axios`
  */
-async function getPlayerCardsForRanking(playerID, roomID) {
-    try {
-        const response = await axios.post("https://tohru-portfolio.secret.jp/bordgame/game/gamesystem_php/get_inventory.php", 
-            new URLSearchParams({ player_id: playerID, room: roomID }).toString(),
-            { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-        );
+module.exports = (axiosInstance) => {
+    async function getPlayerCardsForRanking(playerID, roomID) {
+        try {
+            const response = await axiosInstance.post(
+                "https://tohru-portfolio.secret.jp/bordgame/game/gamesystem_php/get_inventory.php",
+                new URLSearchParams({ player_id: playerID, room: roomID }).toString(),
+                { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+            );
 
-        if (!response.data.success || !Array.isArray(response.data.cards)) {
-            console.error(`❌ プレイヤー ${playerID} のカードデータ取得失敗:`, response.data.error || "不明なエラー");
+            if (!response.data.success || !Array.isArray(response.data.cards)) {
+                console.error(`❌ プレイヤー ${playerID} のカードデータ取得失敗:`, response.data.error || "不明なエラー");
+                return [];
+            }
+
+            return response.data.cards;
+        } catch (error) {
+            console.error(`❌ プレイヤー ${playerID} のカードデータ取得エラー:`, error.message);
             return [];
         }
-
-        return response.data.cards;
-    } catch (error) {
-        console.error(`❌ プレイヤー ${playerID} のカードデータ取得エラー:`, error.message);
-        return [];
     }
-}
 
-// ✅ サーバー (`server.js`) で使用する関数とデータをエクスポート
-module.exports = { getPlayerCardsForRanking, allCards };
+    return { getPlayerCardsForRanking, allCards };
+};
