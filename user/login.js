@@ -23,6 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const mapSelection = document.getElementById("mapSelection"); 
     const tittleSection = document.getElementById("tittleSection"); 
     const tutorialSelection = document.getElementById("tutorialSelection"); 
+    const maps = document.querySelectorAll(".map");
+    const confirmMapButton = document.getElementById("confirmMapSelection");
 
     if (!newGameBtn || !joinGameBtn || !copyLinkBtn) {
         console.error("❌ 必要なボタンが見つかりません");
@@ -115,6 +117,32 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         })
         .catch(error => console.error("❌ newgame.php 取得エラー:", error));
+    });
+
+    maps.forEach(map => {
+        map.addEventListener("click", () => {
+            if (map.classList.contains("fixed")) {
+                // 始まりの地と終着点は固定で解除不可
+                return;
+            }
+
+            if (map.classList.contains("selected")) {
+                map.classList.remove("selected");
+                console.log(`🟢 ${map.id} の選択を解除しました`);
+            } else {
+                map.classList.add("selected");
+                console.log(`🔵 ${map.id} が選択されました`);
+            }
+        });
+    });
+
+    // 🎯 選択されたマップを確定するボタンの処理
+    confirmMapButton.addEventListener("click", () => {
+        const selectedMaps = Array.from(document.querySelectorAll(".map.selected"))
+            .map(map => map.id)
+            .join(", ");
+
+        console.log(`✅ ${roomID} {${selectedMaps}}`);
     });
 
     // 🎯 ホストの判定処理
