@@ -269,34 +269,43 @@ function selectTutorial(option) {
         startGameBtn.textContent = "ホストがゲームを開始するのを待ってください";
     }
 }
-document.getElementById("startGameBtn").addEventListener("click", () => {
-    if (sessionStorage.getItem("roomHost") !== "true") {
-        console.log("🚫 ホストでないため、ゲーム開始できません");
-        return;
-    }
+   // 🎯 ゲーム開始ボタンのクリックイベントを設定
+document.getElementById("startGameBtn").addEventListener("click", startGame);
 
-    console.log(`🎮 ゲーム開始リクエスト送信: ルームID ${roomID}`);
-
-    if (!roomID) {
-        alert("ルームIDが見つかりません");
-        return;
-    }
-
-    const tutorialPreference = sessionStorage.getItem("tutorialPreference") || "false";
-
-    // 🎯 WebSocket 経由でゲーム開始リクエストを送信
-    socket.emit("startGame", { room: roomID });
-
-    // 🎯 サーバーから `gameStarted` を受け取ったらリダイレクト
-    socket.on("gameStarted", (data) => {
-        console.log("✅ ゲーム開始がサーバーから確認されました:", data);
-
-        if (gameStartURL) {
-            const finalURL = `${gameStartURL}&tutorial=${tutorialPreference}`;
-            console.log("🚀 リダイレクト先:", finalURL);
-            window.location.href = finalURL;
-        } else {
-            console.error("❌ `gameStartURL` が未定義です！");
+    function startGame() {
+        if (sessionStorage.getItem("roomHost") !== "true") {
+            console.log("🚫 ホストでないため、ゲーム開始できません");
+            return;
         }
+
+        console.log(`🎮 ゲーム開始リクエスト送信: ルームID ${roomID}`);
+
+        if (!roomID) {
+            alert("ルームIDが見つかりません");
+            return;
+        }
+
+        const tutorialPreference = sessionStorage.getItem("tutorialPreference") || "false";
+
+        // 🎯 WebSocket 経由でゲーム開始リクエストを送信
+        socket.emit("startGame", { room: data.roomID });
+
+        // 🎯 サーバーから `startGame` のレスポンスを受け取ったらリダイレクト
+        socket.on("startGame", (data) => {
+            console.log("✅ サーバーからゲーム開始の確認を受信:", data);
+
+            if (!data.roomID || !data.players) {
+                console.error("❌ 無効な `startGame` データ:", data);
+                return;
+            }
+
+            if (gameStartURL) {
+                const finalURL = `${gameStartURL}&tutorial=${tutorialPreference}`;
+                console.log("🚀 リダイレクト先:", finalURL);
+                window.location.href = finalURL;
+            } else {
+                console.error("❌ `gameStartURL` が未定義です！");
+            }
     });
-});
+}
+
