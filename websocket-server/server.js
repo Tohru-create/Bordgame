@@ -118,6 +118,7 @@ socket.on("startGame", async (data) => {
     }
 
     console.log(`🎮 ルーム ${room} でゲーム開始`);
+
     try {
         const response = await axios.get(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${room}&token=SERVER_ADMIN_TOKEN`);
         if (response.data.success) {
@@ -138,16 +139,20 @@ socket.on("startGame", async (data) => {
             io.to(room).emit("updateSelectedMaps", {
                 selectedMaps: rooms[room].selectedMaps
             });
+
+            // 🎯 ゲーム開始のレスポンスを送信
             io.to(room).emit("startGame", { 
                 roomID: room, 
                 players: rooms[room].players // プレイヤーリストを含める
             });
+
             startNewTurn(room);            
         }
     } catch (error) {
         console.error(`❌ session.php データ取得エラー:`, error.message);
     }
 });
+
 
 
 // 🎯 新しいターンの開始

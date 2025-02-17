@@ -80,11 +80,12 @@
         <button onclick="selectTutorial(false)">いらない</button>
     </div>
 
-    <button id="startGameBtn" onclick="startGame()" disabled>ゲーム開始</button>
+    <button id="startGameBtn" style="display:none;" onclick="startGame()" disabled>ゲーム開始</button>
 
     <!-- ルーム内のプレイヤー一覧 -->
     <h2>参加者一覧</h2>
     <ul id="playerList"></ul>
 </body>
-<script src="login.js"></script>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+    <script src="login.js" defer></script>
 </html>

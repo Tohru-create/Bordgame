@@ -1,3 +1,7 @@
+const socket = io("https://bordgame.onrender.com", {
+    transports: ["websocket"], 
+    withCredentials: true 
+});
 document.addEventListener("DOMContentLoaded", () => {
     console.log("📌 login.js ロード完了");
     // 🎯 リロード時に `sessionStorage` をクリアする処理
@@ -165,7 +169,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     checkIfHost();
     
-
     // 🎯 ゲームに参加
     joinGameBtn.addEventListener("click", () => {
         const username = document.getElementById("username").value.trim();
@@ -185,6 +188,9 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("📡 join_game.php のレスポンス:", data);
             if (data.success) {
                 console.log(`✅ ${username} がルーム ${roomID} に登録完了`);
+                //URL生成ゾーン 
+                gameStartURL = `https://tohru-portfolio.secret.jp/bordgame/game/index.html?room=${data.roomID}&token=${data.token}&username=${encodeURIComponent(data.username)}`;
+
                 sessionStorage.setItem("playerToken", data.token);
                 sessionStorage.setItem("playerID", data.playerID); // 🎯 参加者のIDを保存
                 if (isGuest) {
@@ -202,6 +208,12 @@ document.addEventListener("DOMContentLoaded", () => {
             usernameSection.style.display = "none";
             roomSection.style.display = "none";
             mapSelection.style.display = "block";
+        } else{
+            tittleSection.style.display = "none";
+            newGameBtn.style.display = "none";
+            usernameSection.style.display = "none";
+            roomSection.style.display = "none";
+            tutorialSelection.style.display = "block"
         }
     });
 
@@ -229,4 +241,62 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     checkIfHost();
+});
+function selectTutorial(option) {
+    console.log(`🎯 チュートリアル選択: ${option ? "いる" : "いらない"}`);
+
+    // 🎯 選択内容を `sessionStorage` に保存
+    sessionStorage.setItem("tutorialPreference", option ? "true" : "false");
+
+    console.log("📡 保存されたチュートリアル選択:", sessionStorage.getItem("tutorialPreference"));
+
+    // 🎯 選択後にチュートリアル選択画面を非表示
+    document.getElementById("tutorialSelection").style.display = "none";
+
+    // 🎯 `startGame` ボタンを表示
+    const startGameBtn = document.getElementById("startGameBtn");
+    startGameBtn.style.display = "block"; // ✅ ボタンを表示
+
+    if (sessionStorage.getItem("roomHost") === "true") {
+        // 🎯 ホストならボタンを有効化
+        console.log("🏆 あなたはホストなので、`startGame` ボタンを有効化");
+        startGameBtn.disabled = false;
+        startGameBtn.textContent = "ゲーム開始";
+    } else {
+        // 🎯 ゲストならボタンを無効化し、テキストを変更
+        console.log("🚫 あなたはゲストなので、ホストを待機");
+        startGameBtn.disabled = true;
+        startGameBtn.textContent = "ホストがゲームを開始するのを待ってください";
+    }
+}
+document.getElementById("startGameBtn").addEventListener("click", () => {
+    if (sessionStorage.getItem("roomHost") !== "true") {
+        console.log("🚫 ホストでないため、ゲーム開始できません");
+        return;
+    }
+
+    console.log(`🎮 ゲーム開始リクエスト送信: ルームID ${roomID}`);
+
+    if (!roomID) {
+        alert("ルームIDが見つかりません");
+        return;
+    }
+
+    const tutorialPreference = sessionStorage.getItem("tutorialPreference") || "false";
+
+    // 🎯 WebSocket 経由でゲーム開始リクエストを送信
+    socket.emit("startGame", { room: roomID });
+
+    // 🎯 サーバーから `gameStarted` を受け取ったらリダイレクト
+    socket.on("gameStarted", (data) => {
+        console.log("✅ ゲーム開始がサーバーから確認されました:", data);
+
+        if (gameStartURL) {
+            const finalURL = `${gameStartURL}&tutorial=${tutorialPreference}`;
+            console.log("🚀 リダイレクト先:", finalURL);
+            window.location.href = finalURL;
+        } else {
+            console.error("❌ `gameStartURL` が未定義です！");
+        }
+    });
 });
