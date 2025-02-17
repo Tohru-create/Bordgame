@@ -33,7 +33,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let roomID = new URLSearchParams(window.location.search).get("room");
     let token = sessionStorage.getItem("playerToken");
-    let isHost = false; // 🎯 追加: ホスト判定用
+    let isHost = sessionStorage.getItem("roomHost") === "true"; // ホスト判定
+    let isGuest = sessionStorage.getItem("roomHost") === "false"; // ゲスト判定
     
 
     if (roomID) {
@@ -136,14 +137,22 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 🎯 選択されたマップを確定するボタンの処理
     confirmMapButton.addEventListener("click", () => {
         const selectedMaps = Array.from(document.querySelectorAll(".map.selected"))
-            .map(map => map.id)
-            .join(", ");
-
-        console.log(`✅ ${roomID} {${selectedMaps}}`);
+            .map(map => map.id);
+        console.log(`✅ 選択されたマップ: ${selectedMaps.join(", ")}`);
+        // 🎯 サーバーに選択したマップを送信
+        socket.emit("mapSelection", {
+            roomID: roomID,
+            selectedMaps: selectedMaps
+        });
+    
+        // 🎯 チュートリアル選択画面を表示
+        tutorialSelection.style.display = "block";
+        mapSelection.style.display = "none";
     });
+    
+    
 
     // 🎯 ホストの判定処理
     function checkIfHost() {
@@ -178,7 +187,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log(`✅ ${username} がルーム ${roomID} に登録完了`);
                 sessionStorage.setItem("playerToken", data.token);
                 sessionStorage.setItem("playerID", data.playerID); // 🎯 参加者のIDを保存
+                if (isGuest) {
+                    tutorialSelection.style.display = "block";
+                }
             } else {
+                
                 alert(data.error);
             }
         })
@@ -188,8 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
             newGameBtn.style.display = "none";
             usernameSection.style.display = "none";
             roomSection.style.display = "none";
-            mapSelection.style.display = "block"; // ホストのみマップ選択を表示
-            tutorialSelection.style.display = "block"; 
+            mapSelection.style.display = "block";
         }
     });
 

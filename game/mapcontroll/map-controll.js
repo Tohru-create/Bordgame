@@ -1,11 +1,29 @@
 let currentMapID = "map-01"; // 実際に自分がいるマップ
 let viewingMapID = "map-01"; // 表示しているマップ（変更可能）
 
-// マップの背景変更関数
+// 🎯 サーバーから選択されたマップを受信
+socket.on("updateSelectedMaps", (data) => {
+    if (!data.selectedMaps || !Array.isArray(data.selectedMaps)) {
+        console.error("❌ 無効なマップデータ:", data);
+        return;
+    }
+
+    console.log(`📡 WebSocket 受信: 選択されたマップ一覧 - ${data.selectedMaps.join(", ")}`);
+
+    // 🎯 すべてのマップを非表示にする
+    document.querySelectorAll(".map").forEach(map => {
+        if (data.selectedMaps.includes(map.id)) {
+            map.style.display = "block"; // 選択されたマップのみ表示
+        } else {
+            map.style.display = "none"; // 選択されなかったマップは非表示
+        }
+    });
+});
+
+// 🎯 マップの背景変更関数
 function changeMap(mapID) {
     console.log("🗺️ マップ切り替え:", mapID);
 
-    // 現在のアクティブなマップとボードを取得
     const currentMap = document.querySelector(".map.active");
     const newMap = document.getElementById(mapID);
     const board = document.getElementById("board");
@@ -25,7 +43,6 @@ function changeMap(mapID) {
         return;
     }
 
-    // 🎯 ボードのマップを変更 (WebSocket 経由でサーバーに通知)
     viewingMapID = mapID;
     console.log(`📌 ボード切り替え: ${mapID}`);
 
@@ -38,7 +55,6 @@ function changeMap(mapID) {
 
     console.log(`🛠️ マップ切り替え発動: ${mapID}`);
 
-    // **① 他のすべてのマップを非表示にする**
     document.querySelectorAll(".map").forEach(map => {
         if (map !== currentMap && map !== newMap) {
             map.style.display = "none";
@@ -46,23 +62,19 @@ function changeMap(mapID) {
         }
     });
 
-    // **② 新しいマップの準備**
-    newMap.style.opacity = 0;  // 透明にする
-    newMap.style.zIndex = 2;   // 手前に持ってくる
-    newMap.style.display = "block"; // `display: none` を解除
+    newMap.style.opacity = 0;
+    newMap.style.zIndex = 2;
+    newMap.style.display = "block";
 
-    // **③ フェードアウト処理 (0.5秒で透明に)**
     let opacity = 1;
     let fadeOut = setInterval(() => {
         opacity -= 0.05;
         currentMap.style.opacity = opacity;
         board.style.opacity = opacity;
 
-        // **0.25秒後にフェードイン開始**
         if (opacity <= 0.5) {
             clearInterval(fadeOut);
 
-            // **④ フェードイン処理 (0.5秒で表示)**
             let fadeIn = setInterval(() => {
                 opacity += 0.05;
                 newMap.style.opacity = opacity;
@@ -73,17 +85,101 @@ function changeMap(mapID) {
                     newMap.classList.add("active");
                     console.log("✅ マップ & ボード変更完了:", mapID);
 
-                    // **⑤ 古いマップを背景に戻し、完全に非表示**
                     setTimeout(() => {
                         currentMap.classList.remove("active");
-                        currentMap.style.zIndex = 1;  // 背面に移動
-                        currentMap.style.display = "none";  // ✅ 古いマップを非表示
+                        currentMap.style.zIndex = 1;
+                        currentMap.style.display = "none";
                     }, 250);
                 }
             }, 50);
         }
     }, 50);
 }
+
+
+// // マップの背景変更関数
+// function changeMap(mapID) {
+//     console.log("🗺️ マップ切り替え:", mapID);
+
+//     // 現在のアクティブなマップとボードを取得
+//     const currentMap = document.querySelector(".map.active");
+//     const newMap = document.getElementById(mapID);
+//     const board = document.getElementById("board");
+
+//     if (!currentMap) {
+//         console.error("❌ エラー: アクティブなマップが見つかりません。");
+//         return;
+//     }
+
+//     if (!newMap) {
+//         console.warn("⚠️ 指定されたマップIDが存在しません:", mapID);
+//         return;
+//     }
+
+//     if (currentMap === newMap) {
+//         console.log("🔄 すでに選択されているマップです:", mapID);
+//         return;
+//     }
+
+//     // 🎯 ボードのマップを変更 (WebSocket 経由でサーバーに通知)
+//     viewingMapID = mapID;
+//     console.log(`📌 ボード切り替え: ${mapID}`);
+
+//     socket.emit("viewMap", {
+//         room: roomID,
+//         playerID: userID,
+//         mapID: mapID,
+//         token: playerToken,
+//     });
+
+//     console.log(`🛠️ マップ切り替え発動: ${mapID}`);
+
+//     // **① 他のすべてのマップを非表示にする**
+//     document.querySelectorAll(".map").forEach(map => {
+//         if (map !== currentMap && map !== newMap) {
+//             map.style.display = "none";
+//             map.style.opacity = 0;
+//         }
+//     });
+
+//     // **② 新しいマップの準備**
+//     newMap.style.opacity = 0;  // 透明にする
+//     newMap.style.zIndex = 2;   // 手前に持ってくる
+//     newMap.style.display = "block"; // `display: none` を解除
+
+//     // **③ フェードアウト処理 (0.5秒で透明に)**
+//     let opacity = 1;
+//     let fadeOut = setInterval(() => {
+//         opacity -= 0.05;
+//         currentMap.style.opacity = opacity;
+//         board.style.opacity = opacity;
+
+//         // **0.25秒後にフェードイン開始**
+//         if (opacity <= 0.5) {
+//             clearInterval(fadeOut);
+
+//             // **④ フェードイン処理 (0.5秒で表示)**
+//             let fadeIn = setInterval(() => {
+//                 opacity += 0.05;
+//                 newMap.style.opacity = opacity;
+//                 board.style.opacity = opacity;
+
+//                 if (opacity >= 1) {
+//                     clearInterval(fadeIn);
+//                     newMap.classList.add("active");
+//                     console.log("✅ マップ & ボード変更完了:", mapID);
+
+//                     // **⑤ 古いマップを背景に戻し、完全に非表示**
+//                     setTimeout(() => {
+//                         currentMap.classList.remove("active");
+//                         currentMap.style.zIndex = 1;  // 背面に移動
+//                         currentMap.style.display = "none";  // ✅ 古いマップを非表示
+//                     }, 250);
+//                 }
+//             }, 50);
+//         }
+//     }, 50);
+// }
 
 
 // 🎯 サーバーから指定マップのプレイヤーデータを受信
@@ -113,9 +209,6 @@ socket.on("updateViewMap", (data) => {
 
     drawBoard(); // ✅ 変更後のプレイヤー情報で再描画
 });
-
-
-
 
 document.addEventListener("DOMContentLoaded", function () {
     const mapContainer = document.getElementById("map-container");

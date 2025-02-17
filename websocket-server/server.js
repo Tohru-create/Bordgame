@@ -37,6 +37,33 @@ io.on("connection", async (socket) => {
     socket.handshake.headers["Access-Control-Allow-Origin"] = "https://tohru-portfolio.secret.jp";
     socket.handshake.headers["Access-Control-Allow-Credentials"] = "true";
 
+    console.log(`✅ プレイヤーが接続: ${socket.id}`);
+    
+    // 🎯 クライアントからマップ選択データを受信
+    socket.on("mapSelection", (data) => {
+        const { roomID, selectedMaps } = data;
+
+        if (!roomID || !Array.isArray(selectedMaps)) {
+            console.error("❌ 無効なマップ選択データ:", data);
+            return;
+        }
+
+        console.log(`📡 ルーム ${roomID} に選択されたマップ: ${selectedMaps.join(", ")}`);
+
+        // 🎯 ルームデータを更新
+        if (!rooms[roomID]) {
+            rooms[roomID] = { selectedMaps: [], players: {}, host: null };
+        }
+
+        rooms[roomID].selectedMaps = selectedMaps;
+
+        // 🎯 全プレイヤーに選択されたマップを送信
+        io.to(roomID).emit("updateSelectedMaps", { selectedMaps });
+
+        console.log(`✅ ルーム ${roomID} のマップデータが更新されました:`, rooms[roomID]);
+    });
+    
+
     // 🎯 クライアントをルームに参加させる
     socket.on("joinRoom", (data) => {
         console.log("📡 joinRoom 受信:", data);
@@ -51,16 +78,20 @@ io.on("connection", async (socket) => {
         if (!rooms[data.room]) {
             rooms[data.room] = {
                 host: data.playerID, // ルームが初めて作成される場合、最初のプレイヤーをホストに設定
-                players: {}
+                players: {},
+                selectedMaps: [] // マップ選択データも管理
             };
         }
+
+        // 🎯 参加プレイヤーのデフォルトマップ設定
+        const defaultMap = rooms[data.room].selectedMaps.length > 0 ? rooms[data.room].selectedMaps[0] : "map-01";
 
         rooms[data.room].players[data.playerID] = {
             id: data.playerID,
             username: data.username || `Player${data.playerID}`,
             x: 0,
             y: 0,
-            mapID: data.mapID,
+            mapID: data.mapID || defaultMap, // `mapID` が指定されていなければデフォルトマップを設定
             socketId: socket.id,
         };
 
@@ -70,9 +101,11 @@ io.on("connection", async (socket) => {
         io.to(data.room).emit("updatePlayers", {
             roomID: data.room,
             players: Object.values(rooms[data.room].players),
-            host: rooms[data.room].host // ホスト情報をクライアントに送信
+            host: rooms[data.room].host, // ホスト情報をクライアントに送信
+            selectedMaps: rooms[data.room].selectedMaps // 選択されたマップ情報も送信
     });
 });
+
 
 
 const TURN_DURATION = 60000; // 60秒
@@ -102,6 +135,9 @@ socket.on("startGame", async (data) => {
             });
 
             // console.log(`✅ ルーム ${room} のプレイヤーリスト:`, rooms[room].players);
+            io.to(room).emit("updateSelectedMaps", {
+                selectedMaps: rooms[room].selectedMaps
+            });
             io.to(room).emit("startGame", { 
                 roomID: room, 
                 players: rooms[room].players // プレイヤーリストを含める

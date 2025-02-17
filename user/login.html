@@ -29,7 +29,6 @@
         <button id="joinGame">✅ ゲームに参加</button>
     </div>
 
-<!-- メインマップ表示エリア -->
 <!-- マップ選択エリア -->
 <div id="mapSelection" style="display: none;">
     <div id="map-container">
@@ -70,52 +69,12 @@
             <p class="map-label">終着点</p>
         </div>
     </div>
-</div>
-<!-- マップ選択エリア -->
-<div id="mapSelection" style="display: none;">
-    <div id="map-container">
-        <div class="map-wrapper">
-            <div class="map selected fixed" id="map-01" style="background-image: url('https://tohru-portfolio.secret.jp/bordgame/img/selectmap/Select_Map1.webp');"></div>
-            <p class="map-label">始まりの地</p>
-        </div>
-        <div class="map-wrapper">
-            <div class="map" id="map-02" style="background-image: url('https://tohru-portfolio.secret.jp/bordgame/img/selectmap/Select_Map2.webp');"></div>
-            <p class="map-label">電子世界</p>
-        </div>
-        <div class="map-wrapper">
-            <div class="map" id="map-03" style="background-image: url('https://tohru-portfolio.secret.jp/bordgame/img/selectmap/Select_Map3.webp');"></div>
-            <p class="map-label">魔法の国</p>
-        </div>
-        <div class="map-wrapper">
-            <div class="map" id="map-04" style="background-image: url('https://tohru-portfolio.secret.jp/bordgame/img/selectmap/Select_Map4.webp');"></div>
-            <p class="map-label">未来都市</p>
-        </div>
-        <div class="map-wrapper">
-            <div class="map" id="map-05" style="background-image: url('https://tohru-portfolio.secret.jp/bordgame/img/selectmap/Select_Map5.webp');"></div>
-            <p class="map-label">お菓子の世界</p>
-        </div>
-        <div class="map-wrapper">
-            <div class="map" id="map-06" style="background-image: url('https://tohru-portfolio.secret.jp/bordgame/img/selectmap/Select_Map6.webp');"></div>
-            <p class="map-label">水中都市</p>
-        </div>
-        <div class="map-wrapper">
-            <div class="map" id="map-07" style="background-image: url('https://tohru-portfolio.secret.jp/bordgame/img/selectmap/Select_Map7.webp');"></div>
-            <p class="map-label">二次元の星</p>
-        </div>
-        <div class="map-wrapper">
-            <div class="map" id="map-08" style="background-image: url('https://tohru-portfolio.secret.jp/bordgame/img/selectmap/Select_Map8.webp');"></div>
-            <p class="map-label">恐竜世界</p>
-        </div>
-        <div class="map-wrapper">
-            <div class="map selected fixed" id="map-09" style="background-image: url('https://tohru-portfolio.secret.jp/bordgame/img/selectmap/Select_Map9.webp');"></div>
-            <p class="map-label">終着点</p>
-        </div>
-    </div>
-<button id="confirmMapSelection">選択を確定</button>    
+
+<button id="confirmMapSelection">選択を確定</button>
 </div>
 
 
-    <div id="tutorialSelection" style="display: none;">
+    <div id="tutorialSelection" style="display:none;">
         <p>チュートリアルを受けますか？</p>
         <button onclick="selectTutorial(true)">いる</button>
         <button onclick="selectTutorial(false)">いらない</button>
