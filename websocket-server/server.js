@@ -141,7 +141,8 @@ socket.on("startGame", async (data) => {
             });
 
             // 🎯 ゲーム開始のレスポンスを送信
-            io.to(room).emit("startGame", { 
+            console.log(`送信します`);
+            io.to(room).emit("redirectgame", { 
                 roomID: room, 
                 players: rooms[room].players // プレイヤーリストを含める
             });

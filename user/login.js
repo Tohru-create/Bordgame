@@ -110,6 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 // 🎯 ルームIDとホスト情報を保存
+                sessionStorage.setItem("roomID", data.roomID);
                 roomID = data.roomID;
 
                 // 🎯 UIの更新
@@ -271,6 +272,7 @@ function selectTutorial(option) {
 }
    // 🎯 ゲーム開始ボタンのクリックイベントを設定
 document.getElementById("startGameBtn").addEventListener("click", startGame);
+let startroomid = sessionStorage.getItem("roomID");
 
     function startGame() {
         if (sessionStorage.getItem("roomHost") !== "true") {
@@ -278,7 +280,7 @@ document.getElementById("startGameBtn").addEventListener("click", startGame);
             return;
         }
 
-        console.log(`🎮 ゲーム開始リクエスト送信: ルームID ${roomID}`);
+        console.log(`🎮 ゲーム開始リクエスト送信: ルームID ${startroomid}`);
 
         if (!roomID) {
             alert("ルームIDが見つかりません");
@@ -288,14 +290,14 @@ document.getElementById("startGameBtn").addEventListener("click", startGame);
         const tutorialPreference = sessionStorage.getItem("tutorialPreference") || "false";
 
         // 🎯 WebSocket 経由でゲーム開始リクエストを送信
-        socket.emit("startGame", { room: data.roomID });
+        socket.emit("startGame", { room:startroomid });
 
         // 🎯 サーバーから `startGame` のレスポンスを受け取ったらリダイレクト
-        socket.on("startGame", (data) => {
+        socket.on("redirectgame", (data) => {
             console.log("✅ サーバーからゲーム開始の確認を受信:", data);
 
             if (!data.roomID || !data.players) {
-                console.error("❌ 無効な `startGame` データ:", data);
+                console.error("❌ 無効な `redirectgame` データ:", data);
                 return;
             }
 
@@ -308,4 +310,3 @@ document.getElementById("startGameBtn").addEventListener("click", startGame);
             }
     });
 }
-
