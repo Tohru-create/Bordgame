@@ -169,8 +169,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     checkIfHost();
-    
-    // 🎯 ゲームに参加
+
+    window.gameStartURL = "";  // 🎯 グローバル変数として定義
     joinGameBtn.addEventListener("click", () => {
         const username = document.getElementById("username").value.trim();
         if (!username) {
@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         console.log(`✅ ${username} がゲームに参加`);
-
+    
         fetch("join_game.php", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -189,34 +189,45 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("📡 join_game.php のレスポンス:", data);
             if (data.success) {
                 console.log(`✅ ${username} がルーム ${roomID} に登録完了`);
-                //URL生成ゾーン 
-                gameStartURL = `https://tohru-portfolio.secret.jp/bordgame/game/index.html?room=${data.roomID}&token=${data.token}&username=${encodeURIComponent(data.username)}`;
+    
+                // URL生成ゾーン 
+                window.gameStartURL = `https://tohru-portfolio.secret.jp/bordgame/game/index.html?room=${data.roomID}&token=${data.token}&username=${encodeURIComponent(data.username)}`;
+                console.log("📡 `gameStartURL` を設定:", window.gameStartURL);
 
+                // 🎯 sessionStorage にプレイヤー情報を保存
                 sessionStorage.setItem("playerToken", data.token);
-                sessionStorage.setItem("playerID", data.playerID); // 🎯 参加者のIDを保存
-                if (isGuest) {
+                sessionStorage.setItem("playerID", data.playerID);
+    
+                // 🎯 WebSocket 経由で `joinRoom` をサーバーに通知
+                socket.emit("joinRoom", {
+                    room: roomID,
+                    playerID: data.playerID,
+                    username: username
+                });
+    
+                console.log(`📡 WebSocket で joinRoom を送信: roomID=${roomID}, playerID=${data.playerID}, username=${username}`);
+    
+                // 🎯 UIの更新処理
+                if (isHost) {
+                    tittleSection.style.display = "none";
+                    newGameBtn.style.display = "none";
+                    usernameSection.style.display = "none";
+                    roomSection.style.display = "none";
+                    mapSelection.style.display = "block";
+                } else {
+                    tittleSection.style.display = "none";
+                    newGameBtn.style.display = "none";
+                    usernameSection.style.display = "none";
+                    roomSection.style.display = "none";
                     tutorialSelection.style.display = "block";
                 }
             } else {
-                
                 alert(data.error);
             }
         })
         .catch(error => console.error("❌ join_game.php 取得エラー:", error));
-        if (isHost) {
-            tittleSection.style.display = "none";
-            newGameBtn.style.display = "none";
-            usernameSection.style.display = "none";
-            roomSection.style.display = "none";
-            mapSelection.style.display = "block";
-        } else{
-            tittleSection.style.display = "none";
-            newGameBtn.style.display = "none";
-            usernameSection.style.display = "none";
-            roomSection.style.display = "none";
-            tutorialSelection.style.display = "block"
-        }
     });
+    
 
     // 🎯 招待リンクをコピー
     copyLinkBtn.addEventListener("click", () => {
@@ -272,14 +283,13 @@ function selectTutorial(option) {
 }
    // 🎯 ゲーム開始ボタンのクリックイベントを設定
 document.getElementById("startGameBtn").addEventListener("click", startGame);
-let startroomid = sessionStorage.getItem("roomID");
 
     function startGame() {
         if (sessionStorage.getItem("roomHost") !== "true") {
             console.log("🚫 ホストでないため、ゲーム開始できません");
             return;
         }
-
+        let startroomid = sessionStorage.getItem("roomID");
         console.log(`🎮 ゲーム開始リクエスト送信: ルームID ${startroomid}`);
 
         if (!roomID) {
@@ -308,5 +318,5 @@ let startroomid = sessionStorage.getItem("roomID");
             } else {
                 console.error("❌ `gameStartURL` が未定義です！");
             }
-    });
+        });
 }

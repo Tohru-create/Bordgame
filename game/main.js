@@ -28,20 +28,6 @@ if (roomID) {
 } else {
     console.error("❌ ルームIDが見つかりません");
 }
-socket.on("connect", () => {
-    console.log("✅ WebSocket 接続成功");
-    if (roomID) {
-        console.log(`🔗 WebSocket 経由でルーム ${roomID} に参加`);
-        socket.emit("joinRoom", {
-            room: roomID,
-            playerID: userID,
-            username: username, // 🎯 ここが適切な値か確認！
-            mapID: currentMapID
-        });             
-    }
-});
-
-
 
 // 🎯 プレイヤー情報
 let players = {};
@@ -82,17 +68,23 @@ fetch(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${roomID
         console.log("✅ 現在の全プレイヤーデータ:", players);
         console.log("✅ プレイヤーサイズデータ:", playerSizes);
 
-        // 🎯 プレイヤー登録をサーバーに送信
-        socket.emit("registerPlayer", {
-            id: currentPlayer.id,
-            username: currentPlayer.username,
-            token: playerToken,
-            x: currentPlayer.x,
-            y: currentPlayer.y,
-            size: currentPlayer.size, 
-            room: roomID 
-        });
+        let hasRegistered = sessionStorage.getItem("hasRegistered") === "true"; // 🎯 ここで sessionStorage を利用
 
+        socket.on("connect", () => {
+            if (!hasRegistered) {
+                hasRegistered = true;
+                sessionStorage.setItem("hasRegistered", "true"); // 🎯 ここでフラグを保持
+                socket.emit("registerPlayer", {
+                    id: currentPlayer.id,
+                    username: currentPlayer.username,
+                    token: playerToken,
+                    x: currentPlayer.x,
+                    y: currentPlayer.y,
+                    size: currentPlayer.size, 
+                    room: roomID 
+                });
+            }
+        });
         drawBoard();
     } else {
         console.error("❌ プレイヤーデータ取得失敗:", data.error);
