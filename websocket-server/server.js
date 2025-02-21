@@ -156,23 +156,10 @@ socket.on("startGame", async (data) => {
             io.to(room).emit("updateSelectedMaps", {
                 selectedMaps: rooms[room].selectedMaps
             });
-
-            // 🎯 ゲーム開始のレスポンスを送信
-            console.log(`送信します`);
-            try {
-                console.log(`📡 [DEBUG] redirectgame 送信データをチェック`);
-            
-                // `rooms[room].players` に無限参照があるかチェック
-                const jsonTest = JSON.stringify(rooms[room].players);
-                console.log(`✅ players の JSON 変換成功:`, jsonTest);
-            
-                io.to(room).emit("redirectgame", { 
-                    roomID: room, 
-                    players: rooms[room].players 
-                });
-            } catch (error) {
-                console.error("❌ players に循環参照が含まれているため、送信できません:", error);
-            }            
+            io.to(room).emit("startGame", { 
+                roomID: room, 
+                players: rooms[room].players // プレイヤーリストを含める
+            });
 
             startNewTurn(room);            
         }

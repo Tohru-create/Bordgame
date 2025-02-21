@@ -7,14 +7,16 @@ function getParamFromURL(param) {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
 }
-const roomID = getParamFromURL("room");  // `roomID` を取得
-const token = getParamFromURL("token");  // `token` を取得
-const userID = getParamFromURL("user_id");  // `token` を取得
+const roomID = getParamFromURL("room");
+const token = getParamFromURL("token"); 
+const userID = getParamFromURL("user_id");
 const username = getParamFromURL("username");
+const hostsettings = getParamFromURL("hostsettings");
 window.roomID = roomID; 
 window.playerToken = token;
 window.userID = userID;
-window.username = username
+window.username = username;
+window.hostsettings = hostsettings;
 
 
 if (token) {
@@ -36,6 +38,7 @@ let currentPlayer = null;
 
 const board = document.getElementById("board");
 const playerToken = sessionStorage.getItem("playerToken");
+
 
 console.log("📌 送信する token:", playerToken);
 

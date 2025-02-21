@@ -282,41 +282,43 @@ function selectTutorial(option) {
     }
 }
    // 🎯 ゲーム開始ボタンのクリックイベントを設定
-document.getElementById("startGameBtn").addEventListener("click", startGame);
+   document.getElementById("startGameBtn").addEventListener("click", startGame);
 
-    function startGame() {
-        if (sessionStorage.getItem("roomHost") !== "true") {
-            console.log("🚫 ホストでないため、ゲーム開始できません");
-            return;
-        }
-        let startroomid = sessionStorage.getItem("roomID");
-        console.log(`🎮 ゲーム開始リクエスト送信: ルームID ${startroomid}`);
-
-        if (!roomID) {
-            alert("ルームIDが見つかりません");
-            return;
-        }
-
-        const tutorialPreference = sessionStorage.getItem("tutorialPreference") || "false";
-
-        // 🎯 WebSocket 経由でゲーム開始リクエストを送信
-        socket.emit("startGame", { room:startroomid });
-
-        // 🎯 サーバーから `startGame` のレスポンスを受け取ったらリダイレクト
-        socket.on("redirectgame", (data) => {
-            console.log("✅ サーバーからゲーム開始の確認を受信:", data);
-
-            if (!data.roomID || !data.players) {
-                console.error("❌ 無効な `redirectgame` データ:", data);
-                return;
-            }
-
-            if (gameStartURL) {
-                const finalURL = `${gameStartURL}&tutorial=${tutorialPreference}`;
-                console.log("🚀 リダイレクト先:", finalURL);
-                window.location.href = finalURL;
-            } else {
-                console.error("❌ `gameStartURL` が未定義です！");
-            }
-        });
-}
+   function startGame() {
+       if (sessionStorage.getItem("roomHost") !== "true") {
+           console.log("🚫 ホストでないため、ゲーム開始できません");
+           return;
+       }
+   
+       let startroomid = sessionStorage.getItem("roomID");
+       console.log(`🎮 ゲーム開始リクエスト送信: ルームID ${startroomid}`);
+   
+       if (!roomID) {
+           alert("ルームIDが見つかりません");
+           return;
+       }
+   
+       // 🎯 ここで全員に `redirectgame` を送信
+       socket.emit("redirectgame", { room: startroomid });
+   
+       console.log("📡 [startGame] 全員をリダイレクト");
+   }
+   
+   // 🎯 クライアントが `redirectgame` を受信したらリダイレクト
+   socket.on("redirectgame", (data) => {
+       console.log("✅ サーバーからゲーム開始の確認を受信:", data);
+   
+       if (!data.room) {
+           console.error("❌ 無効な `redirectgame` データ:", data);
+           return;
+       }
+   
+       if (window.gameStartURL) {
+           const finalURL = `${window.gameStartURL}&tutorial=${sessionStorage.getItem("tutorialPreference") || "false"}&hostsettings=${sessionStorage.getItem("roomHost") || "false"}`;
+           console.log("🚀 リダイレクト先:", finalURL);
+           window.location.href = finalURL;
+       } else {
+           console.error("❌ `gameStartURL` が未定義です！");
+       }
+   });
+   

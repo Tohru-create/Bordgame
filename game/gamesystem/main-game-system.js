@@ -1,3 +1,21 @@
+const maingameStart = document.getElementById("gamestart");
+if (!maingameStart) {
+    console.error("❌ `#gamestart` ボタンが見つかりません");
+}
+const isHost = window.hostsettings === "true";
+
+if (isHost) {
+    maingameStart.textContent = "ゲーム開始！";
+    maingameStart.disabled = false;
+    maingameStart.addEventListener("click", () => {
+        console.log("🎮 [ホスト] ゲーム開始ボタンが押されました");
+        socket.emit("startGame", { room: roomID });
+    });
+} else {
+    maingameStart.textContent = "ホストがゲームを開始するまでお待ちください";
+    maingameStart.disabled = true;
+}
+
 let currentTurn = 0;
 let activeRoom = null;
 let turnTimerInterval = null; // 🎯 インターバル管理用変数
