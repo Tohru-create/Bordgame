@@ -540,10 +540,14 @@ socket.on("endGame", (data) => {
     // 🎯 ルーム内の全員にゲーム終了通知
     io.to(room).emit("endGame", { roomID: room });
 
-    // 🎯 ルームデータをクリア（オプション）
-    delete rooms[room];
+    // 🎯 30秒後に `rooms[room]` を削除
+    setTimeout(() => {
+        if (rooms[room]) {
+            console.log(`🗑️ ルーム ${room} のデータを削除`);
+            delete rooms[room];
+        }
+    }, 30000); // 30秒 (30,000ミリ秒)
 
-    console.log(`🗑️ ルーム ${room} のデータを削除`);
 });
 
 
