@@ -156,9 +156,11 @@ socket.on("startGame", async (data) => {
             io.to(room).emit("updateSelectedMaps", {
                 selectedMaps: rooms[room].selectedMaps
             });
-            io.to(data.room).emit("updatePlayers", {
-                roomID: data.room,
-                players: Object.values(rooms[data.room])
+            io.to(room).emit("updatePlayers", {
+                roomID: room,
+                players: Object.values(rooms[room].players),
+                host: rooms[room].host,
+                selectedMaps: rooms[room].selectedMaps
             });
             io.to(room).emit("startGame", { 
                 roomID: room, 
