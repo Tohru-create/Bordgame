@@ -62,6 +62,10 @@ io.on("connection", async (socket) => {
 
         console.log(`✅ ルーム ${roomID} のマップデータが更新されました:`, rooms[roomID]);
     });
+    socket.onAny((event, ...args) => {
+        console.log(`📡 [DEBUG] WebSocket イベント受信: ${event}`);
+    });
+
     
 
     // 🎯 クライアントをルームに参加させる
