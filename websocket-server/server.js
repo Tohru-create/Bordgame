@@ -156,21 +156,12 @@ socket.on("startGame", async (data) => {
             io.to(room).emit("updateSelectedMaps", {
                 selectedMaps: rooms[room].selectedMaps
             });
-            console.log(`📡 [DEBUG] updatePlayers を送信: ルーム ${room}`);
-            console.log(`📡 [DEBUG] 送信データ:`, JSON.stringify({
-                roomID: room,
-                players: Object.values(rooms[room].players),
-                host: rooms[room].host,
-                selectedMaps: rooms[room].selectedMaps
-            }, null, 2));
-            
             io.to(room).emit("updatePlayers", {
                 roomID: room,
                 players: Object.values(rooms[room].players),
                 host: rooms[room].host,
                 selectedMaps: rooms[room].selectedMaps
             });
-            
             io.to(room).emit("startGame", { 
                 roomID: room, 
                 players: rooms[room].players // プレイヤーリストを含める
@@ -528,13 +519,33 @@ socket.on("declareWinner", async (data) => {
 // 🎯 ゲーム終了処理
 socket.on("endGame", (data) => {
     if (!data.room) {
-        console.error("❌ ルームIDが指定されていません");
+        console.error("❌ `endGame` ルームIDが指定されていません");
         return;
     }
 
-    console.log(`🛑 ルーム ${data.room} のゲーム終了`);
-    io.to(data.room).emit("endGame");
+    const room = data.room;
+    console.log(`🛑 ルーム ${room} のゲームを終了`);
+
+    // 🎯 タイマーをクリアしてターン管理を停止
+    if (rooms[room]?.timer) {
+        clearTimeout(rooms[room].timer);
+        console.log(`🛑 ルーム ${room} のタイマーをクリア`);
+    }
+
+    // 🎯 `rooms[room]` のゲーム進行フラグを無効化
+    if (rooms[room]) {
+        rooms[room].active = false;
+    }
+
+    // 🎯 ルーム内の全員にゲーム終了通知
+    io.to(room).emit("endGame", { roomID: room });
+
+    // 🎯 ルームデータをクリア（オプション）
+    delete rooms[room];
+
+    console.log(`🗑️ ルーム ${room} のデータを削除`);
 });
+
 
 // 🎯 クライアント切断処理
 socket.on("disconnect", () => {

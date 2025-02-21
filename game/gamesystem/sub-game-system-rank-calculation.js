@@ -11,6 +11,7 @@ if (winButton) {
             winnerId: currentPlayer.id,
             room: roomID
         });
+        socket.emit("endGame", { room: roomID });
     });
 }
 

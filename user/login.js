@@ -191,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log(`✅ ${username} がルーム ${roomID} に登録完了`);
     
                 // URL生成ゾーン 
-                window.gameStartURL = `https://tohru-portfolio.secret.jp/bordgame/game/index.html?room=${data.roomID}&token=${data.token}&username=${encodeURIComponent(data.username)}`;
+                window.gameStartURL = `https://tohru-portfolio.secret.jp/bordgame/game/index.html?room=${data.roomID}&token=${data.token}&user_id=${data.playerID}&username=${encodeURIComponent(data.username)}`;
                 console.log("📡 `gameStartURL` を設定:", window.gameStartURL);
 
                 // 🎯 sessionStorage にプレイヤー情報を保存

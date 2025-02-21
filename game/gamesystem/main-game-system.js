@@ -1,7 +1,9 @@
 const maingameStart = document.getElementById("gamestart");
+
 if (!maingameStart) {
     console.error("❌ `#gamestart` ボタンが見つかりません");
 }
+
 const isHost = window.hostsettings === "true";
 
 if (isHost) {
@@ -10,11 +12,24 @@ if (isHost) {
     maingameStart.addEventListener("click", () => {
         console.log("🎮 [ホスト] ゲーム開始ボタンが押されました");
         socket.emit("startGame", { room: roomID });
+
+        // 🎯 ボタンを非表示にする
+        maingameStart.style.display = "none";
     });
 } else {
     maingameStart.textContent = "ホストがゲームを開始するまでお待ちください";
     maingameStart.disabled = true;
 }
+
+// 🎯 サーバーから `startGame` の通知を受け取ったら全員のボタンを非表示にする
+socket.on("startGame", (data) => {
+    console.log("✅ [クライアント] ゲーム開始通知を受信");
+    
+    // 🎯 すべてのプレイヤーの `#gamestart` ボタンを非表示にする
+    if (maingameStart) {
+        maingameStart.style.display = "none";
+    }
+});
 
 let currentTurn = 0;
 let activeRoom = null;

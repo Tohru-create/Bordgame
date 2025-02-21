@@ -30,6 +30,19 @@ if (roomID) {
 } else {
     console.error("❌ ルームIDが見つかりません");
 }
+socket.on("connect", () => {
+    console.log("✅ WebSocket 接続成功");
+    if (roomID) {
+        console.log(`🔗 WebSocket 経由でルーム ${roomID} に参加`);
+        console.log(userID)
+        socket.emit("joinRoom", {
+            room: roomID,
+            playerID: userID,
+            username: username, // 🎯 ここが適切な値か確認！
+            mapID: currentMapID
+        });             
+    }
+});
 
 // 🎯 プレイヤー情報
 let players = {};
