@@ -42,6 +42,18 @@ const playerToken = sessionStorage.getItem("playerToken");
 
 console.log("📌 送信する token:", playerToken);
 
+console.log("📡 ルームの参加状況を確認します");
+socket.emit("checkRoomStatus", { room: roomID });
+socket.on("roomStatus", (data) => {
+    console.log("✅ [DEBUG] ルームの参加状況を受信:", JSON.stringify(data, null, 2));
+
+    if (data.clients.length === 0) {
+        console.warn(`⚠️ ルーム ${data.roomID} には現在誰も参加していません`);
+    } else {
+        console.log(`✅ ルーム ${data.roomID} の現在の参加者:`, data.clients);
+    }
+});
+
 // 🎯 `session.php` へルームID付きでリクエストを送る
 fetch(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${roomID}`, {
     method: "POST",
@@ -74,6 +86,7 @@ fetch(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${roomID
         let hasRegistered = sessionStorage.getItem("hasRegistered") === "true"; // 🎯 ここで sessionStorage を利用
 
         socket.on("connect", () => {
+            console.log("✅ WebSocket に接続成功:", socket.id);
             if (!hasRegistered) {
                 hasRegistered = true;
                 sessionStorage.setItem("hasRegistered", "true"); // 🎯 ここでフラグを保持

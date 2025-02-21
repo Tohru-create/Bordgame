@@ -563,6 +563,30 @@ socket.on("disconnect", () => {
 
     io.emit("updatePlayers", rooms);
 });
+
+
+socket.on("checkRoomStatus", (data) => {
+    const { room } = data;
+    if (!room) {
+        console.error("❌ checkRoomStatus: ルームIDが指定されていません");
+        return;
+    }
+
+    // 現在のルームにいるクライアント一覧を取得
+    io.in(room).fetchSockets().then(sockets => {
+        const clients = sockets.map(s => s.id);
+        console.log(`📡 [DEBUG] ルーム ${room} の参加者:`, clients);
+
+        // 🎯 クライアントにルームの状況を返す
+        socket.emit("roomStatus", {
+            roomID: room,
+            clients: clients
+        });
+    }).catch(error => {
+        console.error(`❌ ルーム ${room} の状態取得エラー:`, error);
+    });
+});
+
 });
 
 // 🔹 サーバー起動
