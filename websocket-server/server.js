@@ -156,12 +156,21 @@ socket.on("startGame", async (data) => {
             io.to(room).emit("updateSelectedMaps", {
                 selectedMaps: rooms[room].selectedMaps
             });
+            console.log(`📡 [DEBUG] updatePlayers を送信: ルーム ${room}`);
+            console.log(`📡 [DEBUG] 送信データ:`, JSON.stringify({
+                roomID: room,
+                players: Object.values(rooms[room].players),
+                host: rooms[room].host,
+                selectedMaps: rooms[room].selectedMaps
+            }, null, 2));
+            
             io.to(room).emit("updatePlayers", {
                 roomID: room,
                 players: Object.values(rooms[room].players),
                 host: rooms[room].host,
                 selectedMaps: rooms[room].selectedMaps
             });
+            
             io.to(room).emit("startGame", { 
                 roomID: room, 
                 players: rooms[room].players // プレイヤーリストを含める
