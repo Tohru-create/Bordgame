@@ -105,6 +105,19 @@ io.on("connection", async (socket) => {
             selectedMaps: rooms[data.room].selectedMaps // 選択されたマップ情報も送信
     });
 });
+socket.on("redirectgame", (data) => {
+    const { room } = data;
+    if (!room) {
+        console.error("❌ ルームIDが指定されていません");
+        return;
+    }
+
+    console.log(`📡 [server] 全員をリダイレクト: ルーム ${room}`);
+
+    // 🎯 ルーム内の全員にリダイレクトイベントを送信
+    io.to(room).emit("redirectgame", { room: room });
+});
+
 
 
 

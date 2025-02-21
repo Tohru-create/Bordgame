@@ -144,9 +144,11 @@ function updatePlayerData(callback) {
 }
 
 
+let updatePlayersCount = 0;  // 🎯 何回 `updatePlayers` を受け取るか記録
 
 socket.on("updatePlayers", (data) => {
-    console.log("📡 updatePlayers 受信:", data);
+    updatePlayersCount++;
+    console.log(`📡 [updatePlayers] 受信 (${updatePlayersCount}回目):`, JSON.stringify(data, null, 2));
 
     if (!data || !data.roomID || !Array.isArray(data.players)) {
         console.error("❌ updatePlayers のデータ形式が不正:", data);
