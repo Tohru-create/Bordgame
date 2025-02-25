@@ -1,5 +1,4 @@
 const maingameStart = document.getElementById("gamestart");
-
 if (!maingameStart) {
     console.error("❌ `#gamestart` ボタンが見つかりません");
 }
@@ -11,25 +10,16 @@ if (isHost) {
     maingameStart.disabled = false;
     maingameStart.addEventListener("click", () => {
         console.log("🎮 [ホスト] ゲーム開始ボタンが押されました");
+
+        // 🎯 `startGame` をサーバーに送信
         socket.emit("startGame", { room: roomID });
 
-        // 🎯 ボタンを非表示にする
-        maingameStart.style.display = "none";
+        console.log("📡 `startGame` リクエスト送信");
     });
 } else {
     maingameStart.textContent = "ホストがゲームを開始するまでお待ちください";
     maingameStart.disabled = true;
 }
-
-// 🎯 サーバーから `startGame` の通知を受け取ったら全員のボタンを非表示にする
-socket.on("startGame", (data) => {
-    console.log("✅ [クライアント] ゲーム開始通知を受信");
-    
-    // 🎯 すべてのプレイヤーの `#gamestart` ボタンを非表示にする
-    if (maingameStart) {
-        maingameStart.style.display = "none";
-    }
-});
 
 let currentTurn = 0;
 let activeRoom = null;
@@ -37,17 +27,20 @@ let turnTimerInterval = null; // 🎯 インターバル管理用変数
 
 // 🎮 ゲーム開始
 socket.on("startGame", (data) => {
-    if (!data || !data.roomID || !data.players) {
+    if (!data || !data.roomID || !data.players || !data.selectedMaps) {
         console.error("❌ startGame のデータが不正:", data);
         return;
     }
 
     console.log(`🎯 ゲーム開始 - ルーム: ${data.roomID}`);
     console.log("📡 受信したプレイヤーデータ:", data.players);
+    console.log("📡 受信した `selectedMaps`:", data.selectedMaps);
+
+    // 🎯 `selectedMaps` に基づいてマップとボタンの表示を更新
+    applyMapRestrictions(data.selectedMaps);
 
     // 🎯 全プレイヤー情報を保存
     let players = {};
-
     Object.entries(data.players).forEach(([playerID, playerData]) => {
         players[playerID] = {
             id: playerID, 
@@ -62,6 +55,26 @@ socket.on("startGame", (data) => {
     drawBoard();
 });
 
+// 🎯 `selectedMaps` に含まれないマップとボタンを非表示
+function applyMapRestrictions(selectedMaps) {
+    document.querySelectorAll("#map-container .map").forEach(map => {
+        if (!selectedMaps.includes(map.id)) {
+            console.log(`🚫 ${map.id} を非表示`);
+            map.style.display = "none";
+        }
+    });
+
+    document.querySelectorAll("#map-buttons button").forEach(button => {
+        const mapID = button.getAttribute("onclick").match(/'([^']+)'/)[1];
+        if (!selectedMaps.includes(mapID)) {
+            console.log(`🚫 ボタン ${button.innerText} を非表示`);
+            button.style.display = "none";
+        }
+    });
+
+    console.log("✅ `selectedMaps` に基づき、マップとボタンの表示を更新しました");
+}
+
 // 🎯 ターン開始
 socket.on("startTurn", (data) => {
     console.log(`🔄 クライアント側でターン開始を受信: ${data.turn}`);
@@ -69,7 +82,6 @@ socket.on("startTurn", (data) => {
     currentTurn = data.turn;
     showTurnTimerBar();
 });
-
 
 // 🎯 タイムバーを表示して 60 秒で減少
 function showTurnTimerBar() {
@@ -117,6 +129,7 @@ socket.on("endTurn", (data) => {
 
     if (turnTimerInterval) clearInterval(turnTimerInterval);
 });
+
 socket.on("endGame", () => {
     document.getElementById("gameStatus").textContent = "🛑 ゲームが終了しました";
     board.style.display = "none";

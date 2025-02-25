@@ -262,63 +262,17 @@ function selectTutorial(option) {
 
     console.log("📡 保存されたチュートリアル選択:", sessionStorage.getItem("tutorialPreference"));
 
-    // 🎯 選択後にチュートリアル選択画面を非表示
-    document.getElementById("tutorialSelection").style.display = "none";
-
-    // 🎯 `startGame` ボタンを表示
-    const startGameBtn = document.getElementById("startGameBtn");
-    startGameBtn.style.display = "block"; // ✅ ボタンを表示
-
-    if (sessionStorage.getItem("roomHost") === "true") {
-        // 🎯 ホストならボタンを有効化
-        console.log("🏆 あなたはホストなので、`startGame` ボタンを有効化");
-        startGameBtn.disabled = false;
-        startGameBtn.textContent = "ゲーム開始";
-    } else {
-        // 🎯 ゲストならボタンを無効化し、テキストを変更
-        console.log("🚫 あなたはゲストなので、ホストを待機");
-        startGameBtn.disabled = true;
-        startGameBtn.textContent = "ホストがゲームを開始するのを待ってください";
-    }
+    // 🎯 チュートリアル選択後に即リダイレクト
+    redirectToGame();
 }
-   // 🎯 ゲーム開始ボタンのクリックイベントを設定
-   document.getElementById("startGameBtn").addEventListener("click", startGame);
 
-   function startGame() {
-       if (sessionStorage.getItem("roomHost") !== "true") {
-           console.log("🚫 ホストでないため、ゲーム開始できません");
-           return;
-       }
-   
-       let startroomid = sessionStorage.getItem("roomID");
-       console.log(`🎮 ゲーム開始リクエスト送信: ルームID ${startroomid}`);
-   
-       if (!roomID) {
-           alert("ルームIDが見つかりません");
-           return;
-       }
-   
-       // 🎯 ここで全員に `redirectgame` を送信
-       socket.emit("redirectgame", { room: startroomid });
-   
-       console.log("📡 [startGame] 全員をリダイレクト");
-   }
-   
-   // 🎯 クライアントが `redirectgame` を受信したらリダイレクト
-   socket.on("redirectgame", (data) => {
-       console.log("✅ サーバーからゲーム開始の確認を受信:", data);
-   
-       if (!data.room) {
-           console.error("❌ 無効な `redirectgame` データ:", data);
-           return;
-       }
-   
-       if (window.gameStartURL) {
-           const finalURL = `${window.gameStartURL}&tutorial=${sessionStorage.getItem("tutorialPreference") || "false"}&hostsettings=${sessionStorage.getItem("roomHost") || "false"}`;
-           console.log("🚀 リダイレクト先:", finalURL);
-           window.location.href = finalURL;
-       } else {
-           console.error("❌ `gameStartURL` が未定義です！");
-       }
-   });
-   
+function redirectToGame() {
+    if (!window.gameStartURL) {
+        console.error("❌ `gameStartURL` が未定義です！");
+        return;
+    }
+
+    const finalURL = `${window.gameStartURL}&tutorial=${sessionStorage.getItem("tutorialPreference") || "false"}&hostsettings=${sessionStorage.getItem("roomHost") || "false"}`;
+    console.log("🚀 リダイレクト先:", finalURL);
+    window.location.href = finalURL;
+}

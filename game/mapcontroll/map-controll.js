@@ -1,28 +1,76 @@
 let currentMapID = "map-01"; // 実際に自分がいるマップ
 let viewingMapID = "map-01"; // 表示しているマップ（変更可能）
+let selectedMaps = ["map-01"]; // 🎯 初期値
 
-// 🎯 サーバーから選択されたマップを受信
-socket.on("updateSelectedMaps", (data) => {
-    if (!data.selectedMaps || !Array.isArray(data.selectedMaps)) {
-        console.error("❌ 無効なマップデータ:", data);
-        return;
-    }
-
-    console.log(`📡 WebSocket 受信: 選択されたマップ一覧 - ${data.selectedMaps.join(", ")}`);
-
-    // 🎯 すべてのマップを非表示にする
-    document.querySelectorAll(".map").forEach(map => {
-        if (data.selectedMaps.includes(map.id)) {
-            map.style.display = "block"; // 選択されたマップのみ表示
-        } else {
-            map.style.display = "none"; // 選択されなかったマップは非表示
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("🚀 マップ制限の適用");
+    // 🎯 サーバーから `selectedMaps` を受信
+    socket.on("updateSelectedMaps", (data) => {
+        if (!data.selectedMaps) {
+            console.warn("⚠️ `selectedMaps` データがありません");
+            return;
         }
+
+        selectedMaps = data.selectedMaps;
+        console.log("📡 [DEBUG] 受信した `selectedMaps`:", selectedMaps);
+
+        // 🎯 `map-container` 内の `selectedMaps` に含まれないマップを完全に削除
+        document.querySelectorAll("#map-container .map").forEach(map => {
+            if (!selectedMaps.includes(map.id)) {
+                console.log(`🚫 ${map.id} を削除`);
+                map.remove();
+            }
+        });
+
+        // 🎯 `map-buttons` 内の `selectedMaps` に含まれないボタンを削除
+        document.querySelectorAll("#map-buttons button").forEach(button => {
+            const mapID = button.getAttribute("onclick").match(/'([^']+)'/)[1];
+            if (!selectedMaps.includes(mapID)) {
+                console.log(`🚫 ボタン ${button.innerText} を削除`);
+                button.remove();
+            }
+        });
+
+        console.log("✅ `selectedMaps` に基づき、マップとボタンを更新しました");
+    });
+
+    // 🎯 `startGame` を受信したら `selectedMaps` を適用
+    socket.on("startGame", (data) => {
+        console.log("🎮 ゲーム開始 - マップ制限を適用");
+        if (data.selectedMaps) {
+            selectedMaps = data.selectedMaps;
+        }
+
+        applyMapRestrictions();
     });
 });
+
+// 🎯 `selectedMaps` のマップだけ表示する関数
+function applyMapRestrictions() {
+    document.querySelectorAll("#map-container .map").forEach(map => {
+        if (!selectedMaps.includes(map.id)) {
+            console.log(`🚫 ${map.id} を削除`);
+            map.remove();
+        }
+    });
+
+    document.querySelectorAll("#map-buttons button").forEach(button => {
+        const mapID = button.getAttribute("onclick").match(/'([^']+)'/)[1];
+        if (!selectedMaps.includes(mapID)) {
+            console.log(`🚫 ボタン ${button.innerText} を削除`);
+            button.remove();
+        }
+    });
+}
 
 // 🎯 マップの背景変更関数
 function changeMap(mapID) {
     console.log("🗺️ マップ切り替え:", mapID);
+
+    if (!selectedMaps.includes(mapID)) {
+        console.warn(`🚫 ${mapID} は選択されていないため、切り替え不可`);
+        return;
+    }
 
     const currentMap = document.querySelector(".map.active");
     const newMap = document.getElementById(mapID);
@@ -95,6 +143,7 @@ function changeMap(mapID) {
         }
     }, 50);
 }
+
 
 
 // // マップの背景変更関数
