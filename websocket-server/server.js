@@ -111,6 +111,7 @@ io.on("connection", async (socket) => {
 });
 
 const TURN_DURATION = 60000; // 60秒
+
 // 🎮 ゲームスタート時に最初のターンを開始
 socket.on("startGame", async (data) => {
     const { room } = data;
@@ -122,6 +123,7 @@ socket.on("startGame", async (data) => {
     console.log(`🎮 ルーム ${room} でゲーム開始`);
 
     try {
+        // 🎯 PHP からプレイヤーデータを取得
         const response = await axios.get(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${room}&token=SERVER_ADMIN_TOKEN`);
         if (response.data.success) {
             rooms[room] = { // 🎯 session.php のデータ取得成功後にルームを初期化
@@ -137,29 +139,30 @@ socket.on("startGame", async (data) => {
                 };
             });
 
-            // console.log(`✅ ルーム ${room} のプレイヤーリスト:`, rooms[room].players);
-            io.to(room).emit("updateSelectedMaps", {
-                selectedMaps: rooms[room].selectedMaps
-            });
+            // 🎯 `selectedMaps` のみ `rooms[room]` から取得
+            const selectedMaps = rooms[room]?.selectedMaps || [];
+
+            io.to(room).emit("updateSelectedMaps", { selectedMaps });
+
             io.to(room).emit("updatePlayers", {
                 roomID: room,
                 players: Object.values(rooms[room].players),
                 host: rooms[room].host,
-                selectedMaps: rooms[room].selectedMaps
-            });
-            io.to(room).emit("startGame", {
-                roomID: room,
-                players: rooms[room].players,
                 selectedMaps: selectedMaps
             });
 
-            startNewTurn(room);            
+            io.to(room).emit("startGame", {
+                roomID: room,
+                players: rooms[room].players, // 🎯 プレイヤーデータは PHP から
+                selectedMaps: selectedMaps   // 🎯 マップデータのみ `rooms[room]`
+            });
+
+            startNewTurn(room);
         }
     } catch (error) {
         console.error(`❌ session.php データ取得エラー:`, error.message);
     }
 });
-
 
 
 // 🎯 新しいターンの開始
