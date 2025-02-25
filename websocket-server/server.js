@@ -67,48 +67,46 @@ io.on("connection", async (socket) => {
     });
 
     
-
-    // 🎯 クライアントをルームに参加させる
     socket.on("joinRoom", (data) => {
         console.log("📡 joinRoom 受信:", data);
-
+    
         if (!data.room || !data.playerID) {
             console.error("❌ joinRoom に無効なデータ:", data);
             return;
         }
-
+    
         socket.join(data.room);
-
+    
+        // 🎯 `rooms[roomID]` が削除されていた場合でも、以前の `selectedMaps` を復元
         if (!rooms[data.room]) {
+            console.warn(`⚠️ [WARNING] ルーム ${data.room} が存在しなかったため、新規作成`);
             rooms[data.room] = {
-                host: data.playerID, // ルームが初めて作成される場合、最初のプレイヤーをホストに設定
+                selectedMaps: rooms[data.room]?.selectedMaps || [],  // 🎯 `selectedMaps` を復元
                 players: {},
-                selectedMaps: [] // マップ選択データも管理
+                host: data.playerID
             };
         }
-
-        // 🎯 参加プレイヤーのデフォルトマップ設定
-        const defaultMap = rooms[data.room].selectedMaps.length > 0 ? rooms[data.room].selectedMaps[0] : "map-01";
-
+    
         rooms[data.room].players[data.playerID] = {
             id: data.playerID,
             username: data.username || `Player${data.playerID}`,
             x: 0,
             y: 0,
-            mapID: data.mapID || defaultMap, // `mapID` が指定されていなければデフォルトマップを設定
+            mapID: data.mapID || "map-01",
             socketId: socket.id,
         };
-
-        console.log("✅ 現在の rooms:", JSON.stringify(rooms, null, 2));
-
-        // ルーム内のプレイヤー情報を全員に送信
+    
+        console.log(`✅ 現在の rooms:`, JSON.stringify(rooms, null, 2));
+    
         io.to(data.room).emit("updatePlayers", {
             roomID: data.room,
             players: Object.values(rooms[data.room].players),
-            host: rooms[data.room].host, // ホスト情報をクライアントに送信
-            selectedMaps: rooms[data.room].selectedMaps // 選択されたマップ情報も送信
+            host: rooms[data.room].host,
+            selectedMaps: rooms[data.room].selectedMaps
+        });
     });
-});
+    
+
 
 const TURN_DURATION = 60000; // 60秒
 socket.on("startGame", async (data) => {
