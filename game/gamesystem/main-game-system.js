@@ -55,6 +55,7 @@ socket.on("startGame", (data) => {
     drawBoard();
 });
 
+
 // 🎯 `selectedMaps` に含まれないマップとボタンを非表示
 function applyMapRestrictions(selectedMaps) {
     document.querySelectorAll("#map-container .map").forEach(map => {
