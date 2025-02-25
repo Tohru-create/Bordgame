@@ -141,6 +141,10 @@ socket.on("startGame", async (data) => {
 
             // 🎯 `selectedMaps` のみ `rooms[room]` から取得
             const selectedMaps = rooms[room]?.selectedMaps || [];
+            console.log("📡 [DEBUG] `startGame` 送信データ:");
+            console.log(`📝 roomID: ${room}`);
+            console.log("📝 players:", JSON.stringify(rooms[room].players, null, 2));
+            console.log("📝 selectedMaps:", JSON.stringify(selectedMaps, null, 2));
 
             io.to(room).emit("updateSelectedMaps", { selectedMaps });
 
