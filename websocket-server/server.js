@@ -111,27 +111,30 @@ io.on("connection", async (socket) => {
 });
 
 const TURN_DURATION = 60000; // 60秒
-
-// 🎮 ゲームスタート時に最初のターンを開始
 socket.on("startGame", async (data) => {
+    console.log("📡 [DEBUG] startGame イベントが発火！", data);
+
     const { room } = data;
     if (!room) {
-        console.error("❌ ルームIDが指定されていません");
+        console.error("❌ startGame: ルームIDが指定されていません");
         return;
     }
 
     console.log(`🎮 ルーム ${room} でゲーム開始`);
 
     try {
-        // 🎯 PHP からプレイヤーデータを取得
         const response = await axios.get(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${room}&token=SERVER_ADMIN_TOKEN`);
+        console.log("📡 [DEBUG] session.php のレスポンス:", response.data);
+
         if (response.data.success) {
-            rooms[room] = { // 🎯 session.php のデータ取得成功後にルームを初期化
-                players: {},
-                turn: 0,
-                active: true,
-                timer: null,
-            };
+            // 🎯 `rooms[room]` を上書きするのではなく、既存のデータを保持
+            if (!rooms[room]) {
+                rooms[room] = { players: {}, turn: 0, active: true, timer: null, selectedMaps: [] };
+            }
+
+            // 🎯 `selectedMaps` を保持する（もし `undefined` なら `[]` を設定）
+            rooms[room].selectedMaps = rooms[room].selectedMaps || [];
+
             response.data.players.forEach(player => {
                 rooms[room].players[player.id] = {
                     hasRolledDice: false,
@@ -139,12 +142,10 @@ socket.on("startGame", async (data) => {
                 };
             });
 
-            // 🎯 `selectedMaps` のみ `rooms[room]` から取得
-            const selectedMaps = rooms[room]?.selectedMaps || [];
-            console.log("📡 [DEBUG] `startGame` 送信データ:");
-            console.log(`📝 roomID: ${room}`);
+            console.log("📡 [DEBUG] startGame 送信データ:");
+            console.log("📝 roomID:", room);
             console.log("📝 players:", JSON.stringify(rooms[room].players, null, 2));
-            console.log("📝 selectedMaps:", JSON.stringify(selectedMaps, null, 2));
+            console.log("📝 selectedMaps:", JSON.stringify(rooms[room].selectedMaps, null, 2));
 
             io.to(room).emit("updateSelectedMaps", { selectedMaps });
 
@@ -157,16 +158,19 @@ socket.on("startGame", async (data) => {
 
             io.to(room).emit("startGame", {
                 roomID: room,
-                players: rooms[room].players, // 🎯 プレイヤーデータは PHP から
-                selectedMaps: selectedMaps   // 🎯 マップデータのみ `rooms[room]`
+                players: rooms[room].players,
+                selectedMaps: rooms[room].selectedMaps // 🎯 正しいデータを送信
             });
 
             startNewTurn(room);
+        } else {
+            console.error("❌ session.php のレスポンスが success ではありません", response.data);
         }
     } catch (error) {
-        console.error(`❌ session.php データ取得エラー:`, error.message);
+        console.error("❌ session.php データ取得エラー:", error.message);
     }
 });
+
 
 
 // 🎯 新しいターンの開始
