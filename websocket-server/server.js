@@ -42,26 +42,24 @@ io.on("connection", async (socket) => {
     // 🎯 クライアントからマップ選択データを受信
     socket.on("mapSelection", (data) => {
         const { roomID, selectedMaps } = data;
-
+    
         if (!roomID || !Array.isArray(selectedMaps)) {
             console.error("❌ 無効なマップ選択データ:", data);
             return;
         }
-
+    
         console.log(`📡 ルーム ${roomID} に選択されたマップ: ${selectedMaps.join(", ")}`);
-
-        // 🎯 ルームデータを更新
+    
         if (!rooms[roomID]) {
             rooms[roomID] = { selectedMaps: [], players: {}, host: null };
         }
-
+    
         rooms[roomID].selectedMaps = selectedMaps;
-
-        // 🎯 全プレイヤーに選択されたマップを送信
+    
+        console.log(`✅ [DEBUG] rooms[${roomID}].selectedMaps に保存:`, rooms[roomID].selectedMaps);
+    
         io.to(roomID).emit("updateSelectedMaps", { selectedMaps });
-
-        console.log(`✅ ルーム ${roomID} のマップデータが更新されました:`, rooms[roomID]);
-    });
+    });    
     socket.onAny((event, ...args) => {
         console.log(`📡 [DEBUG] WebSocket イベント受信: ${event}`);
     });
@@ -123,6 +121,7 @@ socket.on("startGame", async (data) => {
     console.log(`🎮 ルーム ${room} でゲーム開始`);
 
     try {
+        console.log("📡 [DEBUG] startGame 実行前の selectedMaps:", rooms[room]?.selectedMaps);
         const response = await axios.get(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${room}&token=SERVER_ADMIN_TOKEN`);
         console.log("📡 [DEBUG] session.php のレスポンス:", response.data);
 
