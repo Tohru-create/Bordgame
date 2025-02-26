@@ -1,136 +1,104 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // console.log("🚀 ワープシステム起動");
+// ✅ エネルギーを管理する変数
+let playerEnergy = 0;
+const energyMax = 100;
 
-    // 各マップのワープゾーン設定 (座標ごとに移動可能なマップを設定)
-    const warpZones = {
-        "map-01": [{ x: 5, y: 2, destinations: ["map-02", "map-03"] }],
-        "map-02": [{ x: 10, y: 1, destinations: ["map-01", "map-04"] }],
-        "map-03": [{ x: 3, y: 6, destinations: ["map-05"] }],
-        "map-04": [{ x: 7, y: 3, destinations: ["map-06", "map-07"] }],
-        "map-05": [{ x: 2, y: 9, destinations: ["map-01"] }],
-        "map-06": [{ x: 8, y: 4, destinations: ["map-02"] }],
-        "map-07": [{ x: 6, y: 6, destinations: ["map-08", "map-09"] }],
-        "map-08": [{ x: 1, y: 1, destinations: ["map-07"] }],
-        "map-09": [{ x: 4, y: 5, destinations: ["map-03"] }]
-    };
-
-    // **ワープ可能な座標に到達したかチェック**
-    function checkPlayerWarp(player) {
-        const mapID = viewingMapID;
-        if (!warpZones[mapID]) return;
-
-        warpZones[mapID].forEach(zone => {
-            if (player.x === zone.x && player.y === zone.y) {
-                // console.log(`🌟 ワープゾーン到達: (${zone.x}, ${zone.y})`);
-                showWarpOptions(zone.destinations);
-            }
-        });
+// ✅ エネルギーバーを更新する関数
+function updateEnergy(value) {
+    playerEnergy = Math.min(playerEnergy + value, energyMax);
+    
+    const energyBar = document.getElementById("energy-bar");
+    if (energyBar) {
+        energyBar.style.width = `${(playerEnergy / energyMax) * 100}%`;
+    } else {
+        console.error("❌ energy-bar が見つかりません。index.html に #energy-container を追加しましたか？");
     }
 
-    // **ワープ先選択UIを表示**
-    function showWarpOptions(destinations) {
-        let warpMenu = document.createElement("div");
-        warpMenu.id = "warpMenu";
-        warpMenu.style.position = "absolute";
-        warpMenu.style.top = "50%";
-        warpMenu.style.left = "50%";
-        warpMenu.style.transform = "translate(-50%, -50%)";
-        warpMenu.style.padding = "10px";
-        warpMenu.style.background = "rgba(0,0,0,0.8)";
-        warpMenu.style.border = "1px solid white";
-        warpMenu.style.zIndex = "100";
-        warpMenu.style.color = "white";
-        warpMenu.innerHTML = "<p>ワープ先を選んでください:</p>";
+    console.log(`🔋 現在のエネルギー: ${playerEnergy}`);
+}
 
-        destinations.forEach(dest => {
-            let button = document.createElement("button");
-            button.innerText = dest;
-            button.style.margin = "5px";
-            button.onclick = function () {
-                warpMenu.remove();
-                warpToMap(dest);
-            };
-            warpMenu.appendChild(button);
-        });
-
-        let cancelButton = document.createElement("button");
-        cancelButton.innerText = "キャンセル";
-        cancelButton.style.margin = "5px";
-        cancelButton.onclick = function () {
-            warpMenu.remove();
-        };
-        warpMenu.appendChild(cancelButton);
-
-        document.body.appendChild(warpMenu);
+// ✅ Console コマンドからエネルギーを増やす関数（関数名を `energyCommand` に変更）
+window.giveenergy = function (userID, value) {
+    if (!userID || isNaN(value)) {
+        console.error("❌ 無効なパラメータ: energyCommand(userID, value) を使用してください");
+        return;
     }
 
-    // **ワープ処理**
-    function warpToMap(targetMap) {
-        // console.log(`🚀 ワープ実行: ${targetMap}`);
+    console.log(`🔋 ${userID} のエネルギーを ${value} 増加`);
+    updateEnergy(Number(value));
+};
 
-        // **データベースを更新**
-        fetch("https://tohru-portfolio.secret.jp/bordgame/game/gamesystem_php/update_player_map.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                token: playerToken,
-                newMapID: targetMap,
-                room: roomID
-            }).toString()
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                console.error("warp_playerから❌ データベース更新失敗:", data.error);
-                return;
-            }
-            // console.log("✅ データベース更新成功:", data);
 
-            // **WebSocketで他プレイヤーに通知**
-            socket.emit("playerWarped", {
-                room: roomID,
-                playerID: userID,
-                newMapID: targetMap,
-                token: playerToken
-            });
 
-            // **プレイヤーのマップを変更**
-            changeMap(targetMap);
-        })
-        .catch(error => console.error("❌ update_map.php エラー:", error));
-    }
 
-    // **他プレイヤーのワープを適用**
-    socket.on("playerWarped", function (data) {
-        // console.log(`🔄 他プレイヤー (${data.playerID}) がワープ: ${data.newMapID}`);
+const selectedMaps = ["map-01", "map-02", "map-03", "map-04", "map-05", "map-06", "map-07", "map-08"];
+function warpToMap(targetMap) {
+    console.log(`🚀 ワープ実行: ${targetMap}`);
 
-        // **自分がワープした場合のみ盤面を変更**
-        if (data.playerID === userID) {
-            // console.log("✅ 自分のワープなので盤面を変更");
-            changeMap(data.newMapID);
-        } else {
-            // console.log("🚫 他プレイヤーのワープなので盤面は変更しない");
+    fetch("https://tohru-portfolio.secret.jp/bordgame/game/gamesystem_php/update_player_map.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+            token: playerToken,
+            newMapID: targetMap,
+            room: roomID
+        }).toString()
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            console.error("warp_playerから❌ データベース更新失敗:", data.error);
+            return;
         }
-    });
 
+        // **WebSocketで他プレイヤーに通知**
+        socket.emit("playerWarped", {
+            room: roomID,
+            playerID: userID,
+            newMapID: targetMap,
+            token: playerToken
+        });
 
-    // **プレイヤー移動を監視**
-    socket.on("playerMoved", (data) => {
-        // console.log(`📡 プレイヤー移動検知: ID=${data.id}, x=${data.x}, y=${data.y}`);
+        // **プレイヤーのマップを変更**
+        changeMap(targetMap);
+    })
+    .catch(error => console.error("❌ update_map.php エラー:", error));
+}
 
-        // 🎯 `window.userID` を確実に数値型に統一
-        window.userID = Number(window.userID);
-        data.id = Number(data.id);
+// ✅ ランダムワープ処理（エネルギー40消費）
+function randomWarp() {
+    if (playerEnergy < 40) {
+        alert("⚠️ エネルギーが足りません！（40必要）");
+        return;
+    }
 
-        // console.log("🔍 `data.id` の値:", data.id, " (型: " + typeof data.id + ")");
-        // console.log("🔍 `window.userID` の値:", window.userID, " (型: " + typeof window.userID + ")");
+    playerEnergy -= 40;
+    updateEnergy(0);
 
-        // 🎯 自分の移動だけチェック
-        if (data.id === window.userID) {
-            // console.log("✅ 自分の移動イベントなので処理を実行");
-            checkPlayerWarp(data);
-        } else {
-            // console.log("🚫 他プレイヤーの移動イベントなので処理しない");
-        }
-    });
-});
+    const randomMap = selectedMaps[Math.floor(Math.random() * selectedMaps.length)];
+    warpToMap(randomMap);
+    console.log(`🚀 ランダム転送: ${randomMap}`);
+}
+
+// ✅ 指定ワープ処理（エネルギー100消費）
+function selectWarp() {
+    if (playerEnergy < 100) {
+        alert("⚠️ エネルギーが足りません！（100必要）");
+        return;
+    }
+
+    const targetMap = prompt("転送先のマップを選んでください: " + selectedMaps.join(", "));
+    if (!selectedMaps.includes(targetMap)) {
+        alert("⚠️ 無効なマップです！");
+        return;
+    }
+
+    playerEnergy -= 100;
+    updateEnergy(0);
+    warpToMap(targetMap);
+    console.log(`🚀 指定転送: ${targetMap}`);
+}
+
+// ✅ グローバルスコープに登録して `main.js` や `sub-game-system-inventory.js` から呼び出せるようにする
+window.warpToMap = warpToMap;
+window.randomWarp = randomWarp;
+window.selectWarp = selectWarp;

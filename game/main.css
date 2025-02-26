@@ -271,8 +271,28 @@ button {
     display: flex;
     gap: 10px;
 }
+#energy-container {
+    width: 280px;
+    height: 20px;
+    background-color: #ddd;
+    border: 1px solid black;
+    position: absolute;
+    bottom: 45px;
+    left: 15%;
+    z-index: 888;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+#energy-bar {
+    width: 0%;
+    height: 100%;
+    background-color: yellow;
+    transition: width 0.2s ease-in-out;
+}
+
 #hp-container{
-    bottom: 35px;
+    bottom: 10px;
     left: 15%;
     position: absolute;
     z-index: 888;

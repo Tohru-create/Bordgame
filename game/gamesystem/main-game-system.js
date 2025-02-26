@@ -10,7 +10,7 @@ if (isHost) {
     maingameStart.disabled = false;
     maingameStart.addEventListener("click", () => {
         console.log("🎮 [ホスト] ゲーム開始ボタンが押されました");
-        socket.emit("startGame", { room: roomID });
+        socket.emit("", { room: roomID });
         console.log("📡 `startGame` リクエスト送信");
     });
 } else {
@@ -41,9 +41,13 @@ socket.on("startGame", (data) => {
     Object.entries(data.players).forEach(([playerID, playerData]) => {
         players[playerID] = {
             id: playerID, 
-            username: playerData.username
+            username: playerData.username,
+            x: playerData.x,  // ✅ X座標を追加
+            y: playerData.y,  // ✅ Y座標を追加
+            mapID: playerData.mapID || "map-01"  // ✅ mapID を追加（なければデフォルトを設定）
         };
     });
+    
     console.log("✅ 保存したプレイヤーリスト:", players);
 
     activeRoom = data.roomID;
@@ -58,7 +62,6 @@ socket.on("startGame", (data) => {
 function applyMapRestrictions(selectedMaps) {
     document.querySelectorAll("#map-container .map").forEach(map => {
         if (!selectedMaps.includes(map.id)) {
-            console.log(`🚫 ${map.id} を非表示`);
             map.style.display = "none";
         }
     });
@@ -66,7 +69,6 @@ function applyMapRestrictions(selectedMaps) {
     document.querySelectorAll("#map-buttons button").forEach(button => {
         const mapID = button.getAttribute("onclick").match(/'([^']+)'/)[1];
         if (!selectedMaps.includes(mapID)) {
-            console.log(`🚫 ボタン ${button.innerText} を非表示`);
             button.style.display = "none";
         }
     });

@@ -81,6 +81,9 @@ async function loadInventory(token) {
 /**
  * インベントリのページを描画
  */
+/**
+ * インベントリのページを描画（すべてのカードをクリック可能に）
+ */
 function renderInventoryPage() {
     const inventoryList = document.getElementById("inventory-list");
     inventoryList.innerHTML = "";
@@ -90,11 +93,18 @@ function renderInventoryPage() {
         return;
     }
 
-    // console.log("📌 [DEBUG] renderInventoryPage で表示するカード:", inventoryPages[currentPage]);
-
     inventoryPages[currentPage].forEach(([name, count]) => {
         const listItem = document.createElement("li");
         listItem.textContent = `${name} x${count}`;
+        listItem.style.cursor = "pointer";
+        listItem.style.color = "blue";
+
+        // ✅ カードIDを取得してクリックイベントを設定
+        const cardId = Object.keys(allCards).find(id => allCards[id].name === name);
+        if (cardId) {
+            listItem.addEventListener("click", () => useCardById(cardId));
+        }
+
         inventoryList.appendChild(listItem);
     });
 
@@ -102,6 +112,7 @@ function renderInventoryPage() {
     document.getElementById("inventory-prev").disabled = currentPage === 0;
     document.getElementById("inventory-next").disabled = currentPage === inventoryPages.length - 1;
 }
+
 
 /**
  * 次のページを表示

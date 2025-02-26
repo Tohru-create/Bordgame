@@ -95,11 +95,12 @@ io.on("connection", async (socket) => {
         rooms[data.room].players[data.playerID] = {
             id: data.playerID,
             username: data.username || `Player${data.playerID}`,
-            x: 0,
-            y: 0,
-            mapID: data.mapID || "map-01",
+            x: data.x || 0,
+            y: data.y || 0,
+            mapID: data.mapID || "map-01",  // ✅ 初期マップIDをセット
             socketId: socket.id,
         };
+    
     
         console.log(`✅ 現在の rooms:`, JSON.stringify(rooms, null, 2));
     
@@ -153,6 +154,7 @@ socket.on("startGame", async (data) => {
                 console.log("🔹 updateSelectedMaps を送信する直前");
                 io.to(room).emit("updateSelectedMaps", { selectedMaps: rooms[room].selectedMaps });
             
+                console.log("📡 [DEBUG] 送信する players データ:", JSON.stringify(Object.values(rooms[room].players), null, 2));
                 console.log("🔹 updatePlayers を送信する直前");
                 io.to(room).emit("updatePlayers", {
                     roomID: room,
@@ -167,7 +169,7 @@ socket.on("startGame", async (data) => {
                     players: rooms[room].players,
                     selectedMaps: rooms[room].selectedMaps // 🎯 ここを変更
                 });
-                                
+
                 console.log("✅ すべての `emit` が完了しました");
             } catch (error) {
                 console.error("❌ startGame の処理中にエラー発生:", error);

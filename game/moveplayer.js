@@ -59,6 +59,9 @@ function movePlayer(steps) {
             room: roomID.replace("room_", "")
         });
 
+        updateEnergy(Math.abs(steps));
+        console.log(`🔋 現在のエネルギー: ${energy}`);
+
         fetch(`https://tohru-portfolio.secret.jp/bordgame/game/update_position.php?${sendData.toString()}`, {
             method: "GET"
         })

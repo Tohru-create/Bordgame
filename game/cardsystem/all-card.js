@@ -140,7 +140,9 @@ const allCards = {
     "147": { name: "死神の微笑", points: 300 },
     "148": { name: "運命の輪", points: 300 },
     "149": { name: "太陽神の加護", points: 300 },
-    "150": { name: "終焉の刻", points: 300 }
+    "150": { name: "終焉の刻", points: 300 },
+    "999": { name: "ペナルティーカード", points: -500 },
+    "1000": { name: "時空間移動", points: 0 },
 };
 
 /**
