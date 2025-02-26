@@ -144,28 +144,35 @@ socket.on("startGame", async (data) => {
                     username: player.username,
                 };
             });
-
-            console.log("📡 [DEBUG] startGame 送信データ:");
-            console.log("📝 roomID:", room);
-            console.log("📝 players:", JSON.stringify(rooms[room].players, null, 2));
-            console.log("📝 selectedMaps:", JSON.stringify(rooms[room].selectedMaps, null, 2));
-
-            io.to(room).emit("updateSelectedMaps", { selectedMaps });
-
-            io.to(room).emit("updatePlayers", {
-                roomID: room,
-                players: Object.values(rooms[room].players),
-                host: rooms[room].host,
-                selectedMaps: selectedMaps
-            });
-
-            console.log("aaaaaa")
-            io.to(room).emit("startGame", {
-                roomID: room,
-                players: rooms[room].players,
-                selectedMaps: rooms[room].selectedMaps // 🎯 正しいデータを送信
-            });
-
+            try {
+                console.log("📡 [DEBUG] startGame 送信データ:");
+                console.log("📝 roomID:", room);
+                console.log("📝 players:", JSON.stringify(rooms[room].players, null, 2));
+                console.log("📝 selectedMaps:", JSON.stringify(rooms[room].selectedMaps, null, 2));
+            
+                console.log("🔹 updateSelectedMaps を送信する直前");
+                io.to(room).emit("updateSelectedMaps", { selectedMaps });
+            
+                console.log("🔹 updatePlayers を送信する直前");
+                io.to(room).emit("updatePlayers", {
+                    roomID: room,
+                    players: Object.values(rooms[room].players),
+                    host: rooms[room].host,
+                    selectedMaps: selectedMaps
+                });
+            
+                console.log("🔹 startGame を送信する直前");
+                io.to(room).emit("startGame", {
+                    roomID: room,
+                    players: rooms[room].players,
+                    selectedMaps: rooms[room].selectedMaps
+                });
+            
+                console.log("✅ すべての `emit` が完了しました");
+            } catch (error) {
+                console.error("❌ startGame の処理中にエラー発生:", error);
+            }
+            
             startNewTurn(room);
         } else {
             console.error("❌ session.php のレスポンスが success ではありません", response.data);
