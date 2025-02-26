@@ -82,8 +82,6 @@ io.on("connection", async (socket) => {
             console.warn(`⚠️ [WARNING] ルーム ${data.room} が存在しなかったため、新規作成`);
         
             const previousMaps = rooms[data.room]?.selectedMaps || [];  // 以前のマップ情報を取得
-            // 🚀 ログ出力（デバッグ用）
-            console.log(`🛠️ previousMaps の中身:`, JSON.stringify(previousMaps));
             rooms[data.room] = {
                 selectedMaps: previousMaps,  // 以前のマップを保持
                 players: {},
@@ -103,7 +101,7 @@ io.on("connection", async (socket) => {
     
     
         console.log(`✅ 現在の rooms:`, JSON.stringify(rooms, null, 2));
-        io.to(room).emit("updatePlayers", {
+        io.to(data.room).emit("updatePlayers", {
             roomID: room,
             players: Object.values(rooms[room].players), // ✅ 修正後の `players` データを送信
             host: rooms[room].host,
@@ -111,8 +109,6 @@ io.on("connection", async (socket) => {
         });
         
     });
-    
-
 
 const TURN_DURATION = 60000; // 60秒
 socket.on("startGame", async (data) => {
