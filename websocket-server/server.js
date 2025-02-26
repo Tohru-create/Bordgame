@@ -552,30 +552,45 @@ socket.on("endGame", (data) => {
 
 
 // 🎯 クライアント切断処理
+const ROOM_CLEANUP_DELAY = 10000; // 10秒待つ（必要なら変更可能）
+const pendingDeletions = {}; // ルーム削除の予約管理
+
 socket.on("disconnect", () => {
     console.log(`❌ プレイヤーが切断: ${socket.id}`);
 
     Object.keys(rooms).forEach((roomID) => {
-        // 🎯 `rooms[roomID]` の存在チェック
         if (!rooms[roomID] || !rooms[roomID].players) {
             console.warn(`⚠️ ルーム ${roomID} が存在しない、または players が未定義`);
             return;
         }
 
         const playerID = Object.keys(rooms[roomID].players).find(id => rooms[roomID].players[id].socketId === socket.id);
-        
-        if (playerID) {
-            console.log(`🗑️ ルーム ${roomID} からプレイヤー ${playerID} を削除`);
-            delete rooms[roomID].players[playerID];
 
-            // 🎯 ルームが空になったら削除
-            if (Object.keys(rooms[roomID].players).length === 0) {
-                console.log(`🗑️ ルーム ${roomID} を削除`);
-                delete rooms[roomID];
+        if (playerID) {
+            console.log(`🛑 プレイヤー ${playerID} が切断: ルーム ${roomID} から一時的に削除を予約`);
+
+            // 🎯 削除の予約をセット（既存の予約があればキャンセル）
+            if (pendingDeletions[roomID]) {
+                clearTimeout(pendingDeletions[roomID]);
+                console.log(`🛑 ルーム ${roomID} の以前の削除予約をキャンセル`);
             }
+
+            pendingDeletions[roomID] = setTimeout(() => {
+                if (!rooms[roomID].players[playerID]) { // まだ再接続していなければ削除
+                    console.log(`🚨 ${ROOM_CLEANUP_DELAY / 1000}秒間再接続がなかったため、ルーム ${roomID} から完全に削除`);
+                    delete rooms[roomID].players[playerID];
+
+                    if (Object.keys(rooms[roomID].players).length === 0) {
+                        console.log(`🗑️ ルーム ${roomID} を削除`);
+                        delete rooms[roomID];
+                    }
+                } else {
+                    console.log(`✅ プレイヤー ${playerID} が ${ROOM_CLEANUP_DELAY / 1000}秒以内に再接続したため、削除をキャンセル`);
+                }
+                delete pendingDeletions[roomID]; // タイマーを消去
+            }, ROOM_CLEANUP_DELAY);
         }
     });
-
     io.emit("updatePlayers", rooms);
 });
 
