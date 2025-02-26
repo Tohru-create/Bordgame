@@ -10,10 +10,11 @@ if (isHost) {
     maingameStart.disabled = false;
     maingameStart.addEventListener("click", () => {
         console.log("🎮 [ホスト] ゲーム開始ボタンが押されました");
-        socket.emit("", { room: roomID });
-        console.log("📡 `startGame` リクエスト送信");
+        socket.emit("startGame", { room: roomID }); // ✅ 正しいイベント名を指定
+        console.log("📡 `startGame` リクエスト送信: room =", roomID);
     });
-} else {
+}
+else {
     maingameStart.textContent = "ホストがゲームを開始するまでお待ちください";
     maingameStart.disabled = true;
 }

@@ -103,13 +103,14 @@ io.on("connection", async (socket) => {
     
     
         console.log(`✅ 現在の rooms:`, JSON.stringify(rooms, null, 2));
-    
-        io.to(data.room).emit("updatePlayers", {
-            roomID: data.room,
-            players: Object.values(rooms[data.room].players),
-            host: rooms[data.room].host,
-            selectedMaps: rooms[data.room].selectedMaps
+        console.log("📡 [DEBUG] updatePlayers 送信前のデータ:", JSON.stringify(rooms[room].players, null, 2));
+        io.to(room).emit("updatePlayers", {
+            roomID: room,
+            players: Object.values(rooms[room].players), // ✅ 修正後の `players` データを送信
+            host: rooms[room].host,
+            selectedMaps: rooms[room].selectedMaps
         });
+        
     });
     
 
@@ -140,11 +141,15 @@ socket.on("startGame", async (data) => {
             rooms[room].selectedMaps = rooms[room].selectedMaps || [];
 
             response.data.players.forEach(player => {
+                if (!rooms[room].players[player.id]) {
+                    rooms[room].players[player.id] = {};  // もし存在しなければ新規作成
+                }
                 rooms[room].players[player.id] = {
-                    hasRolledDice: false,
-                    username: player.username,
+                    ...rooms[room].players[player.id],  // 既存のデータを保持
+                    hasRolledDice: false,  // 🎲 サイコロを振っていないフラグ
+                    username: player.username
                 };
-            });
+            });            
             try {
                 console.log("📡 [DEBUG] startGame 送信データ:");
                 console.log("📝 roomID:", room);
@@ -154,7 +159,6 @@ socket.on("startGame", async (data) => {
                 console.log("🔹 updateSelectedMaps を送信する直前");
                 io.to(room).emit("updateSelectedMaps", { selectedMaps: rooms[room].selectedMaps });
             
-                console.log("📡 [DEBUG] 送信する players データ:", JSON.stringify(Object.values(rooms[room].players), null, 2));
                 console.log("🔹 updatePlayers を送信する直前");
                 io.to(room).emit("updatePlayers", {
                     roomID: room,
