@@ -99,7 +99,6 @@ io.on("connection", async (socket) => {
             socketId: socket.id,
         };
     
-    
         console.log(`✅ 現在の rooms:`, JSON.stringify(rooms, null, 2));
         io.to(data.room).emit("updatePlayers", {
             roomID: data.room,
