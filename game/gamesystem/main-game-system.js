@@ -49,6 +49,7 @@ socket.on("startGame", (data) => {
     activeRoom = data.roomID;
     document.getElementById("gameStatus").textContent = "🎮 ゲームが開始されました！";
     board.style.display = "grid";
+    document.getElementById("tittlescreen").style.display = "none";
     drawBoard();
 });
 

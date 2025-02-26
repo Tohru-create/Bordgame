@@ -3,10 +3,9 @@ const socket = io("https://bordgame.onrender.com", {
     withCredentials: true 
 });
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("📌 login.js ロード完了");
     // 🎯 リロード時に `sessionStorage` をクリアする処理
     if (sessionStorage.getItem("reloadFlag")) {
-        console.log("🔄 ページがリロードされたため、sessionStorage をクリアします");
+        // console.log("🔄 ページがリロードされたため、sessionStorage をクリアします");
         sessionStorage.clear();  // 全ての `sessionStorage` データを消去
         sessionStorage.removeItem("reloadFlag"); // フラグを削除
     }
@@ -42,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
 
     if (roomID) {
-        console.log(`✅ ルームID取得: ${roomID}`);
+        // console.log(`✅ ルームID取得: ${roomID}`);
         document.getElementById("roomID").textContent = roomID;
         document.getElementById("inviteLink").href = `https://tohru-portfolio.secret.jp/bordgame/user/login.html?room=${roomID}&host=false`;
         roomSection.style.display = "block";
@@ -55,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then(response => response.json())
         .then(data => {
-            console.log("📡 session.php のレスポンス:", data);
+            // console.log("📡 session.php のレスポンス:", data);
             if (data.success) {
                 playerList.innerHTML = "";
                 data.players.forEach(player => {
@@ -82,15 +81,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 🎯 ホストかどうかを判定
     if (sessionStorage.getItem("roomHost") === "true") {
-        console.log("🏆 あなたはホストです！");
         document.getElementById("mapSelection").style.display = "block";
     } else {
-        console.log("🚫 あなたはホストではありません");
         document.getElementById("mapSelection").style.display = "none";
     }
     // 🎯 NewGame（新しいゲームルームを作成）
     newGameBtn.addEventListener("click", () => {
-        console.log("🎮 NewGame ボタンが押されました");
+        // console.log("🎮 NewGame ボタンが押されました");
 
         fetch("newgame.php", { method: "POST" })
         .then(response => response.json())
@@ -134,10 +131,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (map.classList.contains("selected")) {
                 map.classList.remove("selected");
-                console.log(`🟢 ${map.id} の選択を解除しました`);
+                // console.log(`🟢 ${map.id} の選択を解除しました`);
             } else {
                 map.classList.add("selected");
-                console.log(`🔵 ${map.id} が選択されました`);
+                // console.log(`🔵 ${map.id} が選択されました`);
             }
         });
     });

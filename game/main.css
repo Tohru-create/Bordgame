@@ -242,14 +242,29 @@ button {
     background: #ccc;
     cursor: not-allowed;
 }
-
-#gamestart{
-    position: absolute;
-    background-color: white;
-    top: 50%;
-    left: 50%;
-    transform: translateX(-50%);
+#tittlescreen {
+    position: fixed; /* 固定配置 */
+    top: 0;
+    left: 0;
+    width: 100vw; /* 画面幅いっぱい */
+    height: 100vh; /* 画面高さいっぱい */
+    background-color: rgba(255, 255, 255, 1.0); /* 背景を白（少し透明） */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999; /* 一番上に表示 */
 }
+
+#gamestart {
+    position: relative; /* 中央配置のために相対位置 */
+    background-color: white;
+    padding: 15px 30px;
+    font-size: 20px;
+    border: none;
+    cursor: pointer;
+}
+
 #controls {
     bottom: 20px;
     left: 55%;
