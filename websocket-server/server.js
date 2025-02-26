@@ -80,13 +80,15 @@ io.on("connection", async (socket) => {
         // 🎯 `rooms[roomID]` が削除されていた場合でも、以前の `selectedMaps` を復元
         if (!rooms[data.room]) {
             console.warn(`⚠️ [WARNING] ルーム ${data.room} が存在しなかったため、新規作成`);
+            
+            const previousMaps = rooms[data.room]?.selectedMaps || [];  // 以前のマップ情報を取得
             rooms[data.room] = {
-                selectedMaps: rooms[data.room]?.selectedMaps || [],  // 🎯 `selectedMaps` を復元
+                selectedMaps: previousMaps,  // 以前のマップを保持
                 players: {},
                 host: data.playerID
             };
         }
-    
+        
         rooms[data.room].players[data.playerID] = {
             id: data.playerID,
             username: data.username || `Player${data.playerID}`,
@@ -127,9 +129,9 @@ socket.on("startGame", async (data) => {
         if (response.data.success) {
             // 🎯 `rooms[room]` を上書きするのではなく、既存のデータを保持
             if (!rooms[room]) {
-                rooms[room] = { players: {}, turn: 0, active: true, timer: null, selectedMaps: [] };
+                rooms[room] = { players: {}, turn: 0, active: true, timer: null, selectedMaps: rooms[room]?.selectedMaps || [] };
             }
-
+            
             // 🎯 `selectedMaps` を保持する（もし `undefined` なら `[]` を設定）
             rooms[room].selectedMaps = rooms[room].selectedMaps || [];
 
