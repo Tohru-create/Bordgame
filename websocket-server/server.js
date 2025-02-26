@@ -102,10 +102,10 @@ io.on("connection", async (socket) => {
     
         console.log(`✅ 現在の rooms:`, JSON.stringify(rooms, null, 2));
         io.to(data.room).emit("updatePlayers", {
-            roomID: room,
-            players: Object.values(rooms[room].players), // ✅ 修正後の `players` データを送信
-            host: rooms[room].host,
-            selectedMaps: rooms[room].selectedMaps
+            roomID: data.room,
+            players: Object.values(rooms[data.room].players), // ✅ 修正後の `players` データを送信
+            host: rooms[data.room].host,
+            selectedMaps: rooms[data.room].selectedMaps
         });
         
     });
