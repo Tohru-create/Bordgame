@@ -151,23 +151,23 @@ socket.on("startGame", async (data) => {
                 console.log("📝 selectedMaps:", JSON.stringify(rooms[room].selectedMaps, null, 2));
             
                 console.log("🔹 updateSelectedMaps を送信する直前");
-                io.to(room).emit("updateSelectedMaps", { selectedMaps });
+                io.to(room).emit("updateSelectedMaps", { selectedMaps: rooms[room].selectedMaps });
             
                 console.log("🔹 updatePlayers を送信する直前");
                 io.to(room).emit("updatePlayers", {
                     roomID: room,
                     players: Object.values(rooms[room].players),
                     host: rooms[room].host,
-                    selectedMaps: selectedMaps
-                });
+                    selectedMaps: rooms[room].selectedMaps
+                });                
             
                 console.log("🔹 startGame を送信する直前");
                 io.to(room).emit("startGame", {
                     roomID: room,
                     players: rooms[room].players,
-                    selectedMaps: rooms[room].selectedMaps
+                    selectedMaps: rooms[room].selectedMaps // 🎯 ここを変更
                 });
-            
+                                
                 console.log("✅ すべての `emit` が完了しました");
             } catch (error) {
                 console.error("❌ startGame の処理中にエラー発生:", error);
