@@ -103,7 +103,6 @@ io.on("connection", async (socket) => {
     
     
         console.log(`✅ 現在の rooms:`, JSON.stringify(rooms, null, 2));
-        console.log("📡 [DEBUG] updatePlayers 送信前のデータ:", JSON.stringify(rooms[room].players, null, 2));
         io.to(room).emit("updatePlayers", {
             roomID: room,
             players: Object.values(rooms[room].players), // ✅ 修正後の `players` データを送信
