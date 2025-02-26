@@ -159,6 +159,7 @@ socket.on("startGame", async (data) => {
                 selectedMaps: selectedMaps
             });
 
+            console.log("aaaaaa")
             io.to(room).emit("startGame", {
                 roomID: room,
                 players: rooms[room].players,
