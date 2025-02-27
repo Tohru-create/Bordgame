@@ -100,13 +100,13 @@ function warpToMap(targetMap) {
 function updatePlayerMap(targetMap) {
     const sendData = new URLSearchParams({
         token: playerToken,
-        mapID: targetMap, // ✅ ワープ後のマップIDを送信
+        newMapID: targetMap, // ✅ ワープ後のマップIDを送信
         room: roomID
     });
 
     console.log("📡 update_player_map.php にデータを送信開始:", sendData.toString());
 
-    fetch(`https://tohru-portfolio.secret.jp/bordgame/game/update_player_map.php`, {
+    fetch(`https://tohru-portfolio.secret.jp/bordgame/game/gamesystem_php/update_player_map.php`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: sendData.toString()
