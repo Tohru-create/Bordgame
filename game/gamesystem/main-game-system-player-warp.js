@@ -81,7 +81,6 @@ function warpWithEnergy(cost, type) {
     }
 }
 
-// ✅ ワープ処理
 function warpToMap(targetMap) {
     console.log(`🚀 ワープ実行: ${targetMap}`);
 
@@ -93,9 +92,39 @@ function warpToMap(targetMap) {
         token: playerToken
     });
 
-    // **プレイヤーのマップを変更**
+    // **データベースに現在のマップを保存**
+    updatePlayerMap(targetMap);
     changeMap(targetMap);
 }
+
+function updatePlayerMap(targetMap) {
+    const sendData = new URLSearchParams({
+        token: playerToken,
+        mapID: targetMap, // ✅ ワープ後のマップIDを送信
+        room: roomID
+    });
+
+    console.log("📡 update_player_map.php にデータを送信開始:", sendData.toString());
+
+    fetch(`https://tohru-portfolio.secret.jp/bordgame/game/update_player_map.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: sendData.toString()
+    })
+    .then(response => response.json())
+    .then(saveData => {
+        console.log("📡 update_player_map.php のレスポンス:", saveData);
+        if (!saveData.success) {
+            console.error("❌ データベース更新失敗:", saveData.error);
+        } else {
+            console.log("✅ データベースにワープ後のマップ情報を保存:", saveData);
+        }
+    })
+    .catch(error => {
+        console.error("❌ update_player_map.php 取得エラー:", error);
+    });
+}
+
 
 // ✅ グローバル関数化
 window.useWarpItem = useWarpItem;

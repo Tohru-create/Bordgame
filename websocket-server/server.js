@@ -326,14 +326,22 @@ socket.on("viewMap", async (data) => {
     }
 });
 socket.on("playerWarped", (data) => {
-    console.log(`🔄 プレイヤー ${data.playerID} が ${data.newMapID} にワープ`);
+    console.log("📡 ワープ情報を受信:", data);
 
-    // **ルーム全体にプレイヤーのワープを通知**
+    if (!rooms[data.room] || !rooms[data.room].players[data.playerID]) {
+        console.error(`❌ ルーム ${data.room} にプレイヤー ${data.playerID} が存在しません`);
+        return;
+    }
+    // **サーバー側のプレイヤーデータを更新**
+    rooms[data.room].players[data.playerID].mapID = data.newMapID;
+    console.log(`✅ プレイヤー ${data.playerID} の新しいマップ: ${data.newMapID}`);
+    // **全クライアントにワープ情報を通知**
     io.to(data.room).emit("playerWarped", {
         playerID: data.playerID,
         newMapID: data.newMapID
     });
 });
+
 
 // 🎯 プレイヤー移動処理
 socket.on("movePlayer", async (data) => {
