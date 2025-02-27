@@ -12,6 +12,30 @@ socket.on("mapControlSelectedMaps", (data) => {
     console.log("✅ マップデータ更新完了:", selectedMaps);
 });
 
+// ✅ エネルギーバーを更新する関数
+function updateEnergy(value) {
+    playerEnergy = Math.min(playerEnergy + value, energyMax);
+    
+    const energyBar = document.getElementById("energy-bar");
+    if (energyBar) {
+        energyBar.style.width = `${(playerEnergy / energyMax) * 100}%`;
+    } else {
+        console.error("❌ energy-bar が見つかりません。index.html に #energy-container を追加しましたか？");
+    }
+
+    console.log(`🔋 現在のエネルギー: ${playerEnergy}`);
+}
+window.giveenergy = function (userID, value) {
+    if (!userID || isNaN(value)) {
+        console.error("❌ 無効なパラメータ: giveenergy(userID, value) を使用してください");
+        return;
+    }
+
+    console.log(`🔋 ${userID} のエネルギーを ${value} 増加`);
+    updateEnergy(Number(value));
+};
+
+
 // ✅ ワープアイテム使用後にエネルギー消費を決定
 function useWarpItem() {
     if (playerEnergy < 40) {
@@ -39,7 +63,7 @@ function warpWithEnergy(cost, type) {
     }
 
     playerEnergy -= cost;
-    updateEnergy(0);
+    updateEnergy(0); // 🔥 エネルギーバーの更新を追加
 
     if (type === "random") {
         const randomMap = selectedMaps[Math.floor(Math.random() * selectedMaps.length)];
