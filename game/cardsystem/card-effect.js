@@ -2,14 +2,8 @@ function useCardById(cardId) {
     console.log(`🃏 カード使用: ID=${cardId} (${allCards[cardId]?.name})`);
 
     switch (cardId) {
-        case "1000": // ✅ 時空間転送装置
-            if (playerEnergy >= 100) {
-                selectWarp(); // `main-game-system-player-warp.js` の関数を呼び出す
-            } else if (playerEnergy >= 40) {
-                randomWarp(); // `main-game-system-player-warp.js` の関数を呼び出す
-            } else {
-                alert("⚠️ エネルギーが足りません！");
-            }
+        case "1000": // ✅ 時空間転送装置（ワープ）
+            selectWarpType();
             break;
 
         case "009": // 例: 勇者の剣 (HP回復)
@@ -23,5 +17,22 @@ function useCardById(cardId) {
         default:
             alert(`🃏 ${allCards[cardId]?.name || "不明なカード"} を使用しました`);
             break;
+    }
+}
+
+function selectWarpType() {
+    if (playerEnergy < 40) {
+        alert("⚠️ エネルギーが足りません！（最低40必要）");
+        return;
+    }
+
+    const choice = prompt("使用するワープの種類を選んでください: 1. ランダムワープ (40) / 2. 指定ワープ (100)");
+
+    if (choice === "1") {
+        warpWithEnergy(40, "random");
+    } else if (choice === "2") {
+        warpWithEnergy(100, "select");
+    } else {
+        alert("⚠️ 無効な選択です！");
     }
 }

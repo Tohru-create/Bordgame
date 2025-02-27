@@ -149,19 +149,18 @@ socket.on("startGame", async (data) => {
                 console.log("📝 roomID:", room);
                 console.log("📝 players:", JSON.stringify(rooms[room].players, null, 2));
                 console.log("📝 selectedMaps:", JSON.stringify(rooms[room].selectedMaps, null, 2));
+
+                io.to(room).emit("mapControlSelectedMaps", { selectedMaps: rooms[room].selectedMaps });
             
-                console.log("🔹 updateSelectedMaps を送信する直前");
                 io.to(room).emit("updateSelectedMaps", { selectedMaps: rooms[room].selectedMaps });
-            
-                console.log("🔹 updatePlayers を送信する直前");
+
                 io.to(room).emit("updatePlayers", {
                     roomID: room,
                     players: Object.values(rooms[room].players),
                     host: rooms[room].host,
                     selectedMaps: rooms[room].selectedMaps
                 });                
-            
-                console.log("🔹 startGame を送信する直前");
+
                 io.to(room).emit("startGame", {
                     roomID: room,
                     players: rooms[room].players,

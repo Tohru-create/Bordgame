@@ -1,104 +1,78 @@
-// ✅ エネルギーを管理する変数
-let playerEnergy = 0;
-const energyMax = 100;
+// ✅ WebSocket で `selectedMaps` を受け取る
+socket.on("mapControlSelectedMaps", (data) => {
+    console.log("🗺️ サーバーから `selectedMaps` を受信:", data);
 
-// ✅ エネルギーバーを更新する関数
-function updateEnergy(value) {
-    playerEnergy = Math.min(playerEnergy + value, energyMax);
-    
-    const energyBar = document.getElementById("energy-bar");
-    if (energyBar) {
-        energyBar.style.width = `${(playerEnergy / energyMax) * 100}%`;
-    } else {
-        console.error("❌ energy-bar が見つかりません。index.html に #energy-container を追加しましたか？");
-    }
-
-    console.log(`🔋 現在のエネルギー: ${playerEnergy}`);
-}
-
-// ✅ Console コマンドからエネルギーを増やす関数（関数名を `energyCommand` に変更）
-window.giveenergy = function (userID, value) {
-    if (!userID || isNaN(value)) {
-        console.error("❌ 無効なパラメータ: energyCommand(userID, value) を使用してください");
+    if (!data.selectedMaps || !Array.isArray(data.selectedMaps)) {
+        console.error("❌ 無効なマップデータを受信しました:", data);
         return;
     }
 
-    console.log(`🔋 ${userID} のエネルギーを ${value} 増加`);
-    updateEnergy(Number(value));
-};
+    // **グローバル変数 `selectedMaps` にセット**
+    selectedMaps = data.selectedMaps;
+    console.log("✅ マップデータ更新完了:", selectedMaps);
+});
 
+// ✅ ワープアイテム使用後にエネルギー消費を決定
+function useWarpItem() {
+    if (playerEnergy < 40) {
+        alert("⚠️ エネルギーが足りません！（最低40必要）");
+        return;
+    }
 
+    // **選択肢を動的に設定**
+    const choice = prompt("使用するワープの種類を選んでください: 1. ランダムワープ (40) / 2. 指定ワープ (100)");
 
+    if (choice === "1") {
+        warpWithEnergy(40, "random");
+    } else if (choice === "2") {
+        warpWithEnergy(100, "select");
+    } else {
+        alert("⚠️ 無効な選択です！");
+    }
+}
 
-const selectedMaps = ["map-01", "map-02", "map-03", "map-04", "map-05", "map-06", "map-07", "map-08"];
-function warpToMap(targetMap) {
-    console.log(`🚀 ワープ実行: ${targetMap}`);
+// ✅ エネルギー消費を考慮してワープを実行
+function warpWithEnergy(cost, type) {
+    if (playerEnergy < cost) {
+        alert(`⚠️ エネルギーが足りません！（${cost}必要）`);
+        return;
+    }
 
-    fetch("https://tohru-portfolio.secret.jp/bordgame/game/gamesystem_php/update_player_map.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-            token: playerToken,
-            newMapID: targetMap,
-            room: roomID
-        }).toString()
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (!data.success) {
-            console.error("warp_playerから❌ データベース更新失敗:", data.error);
+    playerEnergy -= cost;
+    updateEnergy(0);
+
+    if (type === "random") {
+        const randomMap = selectedMaps[Math.floor(Math.random() * selectedMaps.length)];
+        warpToMap(randomMap);
+        console.log(`🚀 ランダム転送: ${randomMap}`);
+    } else if (type === "select") {
+        const targetMap = prompt("転送先のマップを選んでください: " + selectedMaps.join(", "));
+        if (!selectedMaps.includes(targetMap)) {
+            alert("⚠️ 無効なマップです！");
             return;
         }
 
-        // **WebSocketで他プレイヤーに通知**
-        socket.emit("playerWarped", {
-            room: roomID,
-            playerID: userID,
-            newMapID: targetMap,
-            token: playerToken
-        });
-
-        // **プレイヤーのマップを変更**
-        changeMap(targetMap);
-    })
-    .catch(error => console.error("❌ update_map.php エラー:", error));
+        warpToMap(targetMap);
+        console.log(`🚀 指定転送: ${targetMap}`);
+    }
 }
 
-// ✅ ランダムワープ処理（エネルギー40消費）
-function randomWarp() {
-    if (playerEnergy < 40) {
-        alert("⚠️ エネルギーが足りません！（40必要）");
-        return;
-    }
+// ✅ ワープ処理
+function warpToMap(targetMap) {
+    console.log(`🚀 ワープ実行: ${targetMap}`);
 
-    playerEnergy -= 40;
-    updateEnergy(0);
+    // **WebSocketでサーバーに通知**
+    socket.emit("playerWarped", {
+        room: roomID,
+        playerID: userID,
+        newMapID: targetMap,
+        token: playerToken
+    });
 
-    const randomMap = selectedMaps[Math.floor(Math.random() * selectedMaps.length)];
-    warpToMap(randomMap);
-    console.log(`🚀 ランダム転送: ${randomMap}`);
+    // **プレイヤーのマップを変更**
+    changeMap(targetMap);
 }
 
-// ✅ 指定ワープ処理（エネルギー100消費）
-function selectWarp() {
-    if (playerEnergy < 100) {
-        alert("⚠️ エネルギーが足りません！（100必要）");
-        return;
-    }
-
-    const targetMap = prompt("転送先のマップを選んでください: " + selectedMaps.join(", "));
-    if (!selectedMaps.includes(targetMap)) {
-        alert("⚠️ 無効なマップです！");
-        return;
-    }
-
-    playerEnergy -= 100;
-    updateEnergy(0);
-    warpToMap(targetMap);
-    console.log(`🚀 指定転送: ${targetMap}`);
-}
-
-// ✅ グローバルスコープに登録して `main.js` や `sub-game-system-inventory.js` から呼び出せるようにする
+// ✅ グローバル関数化
+window.useWarpItem = useWarpItem;
 window.warpToMap = warpToMap;
-window.randomWarp = randomWarp;
-window.selectWarp = selectWarp;
