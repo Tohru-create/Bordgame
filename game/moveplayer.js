@@ -1,6 +1,9 @@
 if (!roomID) {
     console.error("❌ ルームIDが見つかりません");
 }
+// ✅ エネルギーを管理する変数
+let playerEnergy = 0;
+const energyMax = 100;
 
 function movePlayer(steps) {
     if (!playerToken || !roomID) {
@@ -31,24 +34,23 @@ function movePlayer(steps) {
 
         for (let i = 0; i < Math.abs(steps); i++) {
             if (steps > 0) {
-                if (newY % 2 === 0) {
-                    if (newX < 9) newX++;
-                    else if (newY < 9) newY++;
-                } else {
-                    if (newX > 0) newX--;
-                    else if (newY < 9) newY++;
+                if (newY % 2 === 0) { // 偶数行
+                    if (newX < 14) newX++; // 右に進む (0～14 の範囲)
+                    else if (newY < 9) newY++; // 次の行へ移動
+                } else { // 奇数行
+                    if (newX > 0) newX--; // 左に進む
+                    else if (newY < 9) newY++; // 次の行へ移動
                 }
-            } else {
-                if (newY % 2 === 0) {
-                    if (newX > 0) newX--;
-                    else if (newY > 0) newY--;
-                } else {
-                    if (newX < 9) newX++;
-                    else if (newY > 0) newY--;
+            } else { // 逆方向
+                if (newY % 2 === 0) { // 偶数行
+                    if (newX > 0) newX--; // 左に戻る
+                    else if (newY > 0) newY--; // 前の行へ移動
+                } else { // 奇数行
+                    if (newX < 14) newX++; // 右に戻る
+                    else if (newY > 0) newY--; // 前の行へ移動
                 }
             }
-        }
-
+        }       
         console.log(`📌 新しい座標: x=${newX}, y=${newY}, mapID=${newMapID}`);
 
         const sendData = new URLSearchParams({
@@ -60,20 +62,23 @@ function movePlayer(steps) {
         });
 
         updateEnergy(Math.abs(steps));
-        console.log(`🔋 現在のエネルギー: ${energy}`);
+        console.log(`🔋 現在のエネルギー: ${playerEnergy}`);
 
+        console.log("📡 update_position.php にデータを送信開始:", sendData.toString());
         fetch(`https://tohru-portfolio.secret.jp/bordgame/game/update_position.php?${sendData.toString()}`, {
             method: "GET"
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log("📡 update_position.php からのレスポンスを受信しました", response);
+            return response.json();
+        })
         .then(saveData => {
             console.log("📡 update_position.php のレスポンス:", saveData);
             if (!saveData.success) {
                 console.error("❌ データベース更新失敗:", saveData.error);
             } else {
                 console.log("✅ データベースにプレイヤー座標を保存:", saveData);
-
-                // 🎯 WebSocket でサーバーにプレイヤーの移動を通知
+        
                 console.log("📡 movePlayer 送信データ:", {
                     id: currentPlayer.id,  
                     token: playerToken,
@@ -87,14 +92,16 @@ function movePlayer(steps) {
                     token: playerToken,
                     x: newX,
                     y: newY,
-                    mapID: newMapID, // ✅ mapID をサーバーに送信
+                    mapID: newMapID,
                     room: roomID
                 });
-
+        
                 updatePlayerData(drawBoard);
             }
         })
-        .catch(error => console.error("❌ update_position.php 取得エラー:", error));
+        .catch(error => {
+            console.error("❌ update_position.php 取得エラー:", error);
+        });
     })
     .catch(error => console.error("❌ session.php 取得エラー:", error));
 }
