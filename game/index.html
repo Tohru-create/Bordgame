@@ -31,6 +31,12 @@
         </div>
     </div>
 
+    <!--死後の世界 -->
+    <div id="dead">
+        <div id="playerdead" style="display: none;">
+            <div id="map-00" style="background-image: url('https://tohru-portfolio.secret.jp/bordgame/img/map//MAP_00.webp');"></div>
+        </div>
+    </div>
     <!-- マップ切り替えボタン -->
     <div id="map-buttons">
         <button onclick="changeMap('map-01')">庭</button>
@@ -45,9 +51,44 @@
     </div>
 
     <div id="tittlescreen">
-        <h1>ゲームタイトル</h1>
+        <h1>Game Tittle</h1>
         <button id="gamestart">ゲーム開始</button>
+        <h1>参加プレイヤー</h1>
+        <p id="playersconnected"></p>
     </div>
+
+    <div id="story" style="display: none;">
+        <div class="container" id="scrollContainer">
+            <p>
+                ある日。
+            </p>
+            <p>
+                天才的な頭脳を持つ少年が "次元跳躍装置" を完成させた。
+            </p>
+            <p>
+                それは、並行世界への扉を開く禁断の発明。
+            </p>
+            <p>
+                …でも、彼らにとってはただの 「金儲けの道具」 に過ぎなかった。
+            </p>
+            <p>
+                好奇心と欲望に駆られた少年たちは、装置を起動し 異世界の冒険 へと旅立つ。
+            </p>
+            <p>
+                しかし、行く先々で待ち受けるのは、未知の生物、謎の遺跡、そして 並行世界を統べる謎の存在 だった……。
+            </p>
+            <p>
+                果たして彼らは、無事に大金を手にし、元の世界へ帰ることができるのか？
+            </p>
+            <p>
+                それとも、この冒険が思わぬ運命を招くのか——？
+            </p>
+            <p>
+                このゲームはそんなある少年の旅路の記録である。
+            </p>
+        </div>
+    </div>
+
     <div id="controls">
         <button id="moveForward">⬆️ </button>
         <button id="rollDice">🎲 </button>
