@@ -26,6 +26,7 @@ function damage(amount) {
         console.log("Server Response:", data);
         if (data.status === "success") {
             loadHP(); // 変更後の HP を再取得
+            checkDeath(window.userID, window.roomID);
         } else {
             console.error("HP 更新に失敗:", data.message);
         }
@@ -61,6 +62,7 @@ function heal(amount) {
         console.log("Server Response:", data);
         if (data.status === "success") {
             loadHP(); // 変更後の HP を再取得
+            checkDeath(window.userID, window.roomID);
         } else {
             console.error("HP 更新に失敗:", data.message);
         }
