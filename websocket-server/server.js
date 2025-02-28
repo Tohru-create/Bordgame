@@ -263,68 +263,70 @@ function endTurn(room) {
 
 
 
-// 🎯マップ切り替え
+// 🎯 マップ切り替え
 socket.on("viewMap", async (data) => {
     if (!data.room || !data.playerID || !data.mapID) {
         console.error("❌ 無効な viewMap データ:", data);
         return;
     }
-    // console.log(`👀 プレイヤー ${data.playerID} がマップ ${data.mapID} を閲覧`);
+
+    console.log(`📡 [DEBUG] viewMap 受信: プレイヤー ${data.playerID} がマップ ${data.mapID} を閲覧`);
+
+    let response; // 事前に宣言
     try {
         console.log("📌 送信する token:", data.token);
-        try {
-            const response = await axios.post(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${data.room}`, 
-                new URLSearchParams({ token: data.token }).toString(), {
-                headers: { "Content-Type": "application/x-www-form-urlencoded" }
-            });
-        
-            console.log("📡 session.php のレスポンス取得完了");
-        
-            if (typeof response.data !== "object") {
-                console.error("❌ session.php のレスポンスが JSON ではありません:", response.data);
-                return;
-            }
-        
-            if (response.data.error) {
-                console.error("❌ session.php のエラー:", response.data.error);
-                return;
-            }
-        
-            console.log(`📡 movePlayer 受信 - rooms[${data.room}] の状態:`, JSON.stringify(rooms[data.room], (key, value) => {
-                if (key === "timer") return undefined; // `timer` プロパティを削除
-                return value;
-            }, 2));           
-        
-        } catch (error) {
-            console.error("❌ session.php 取得エラー:", error.message);
+
+        // 🔹 session.php からプレイヤーデータを取得
+        response = await axios.post(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${data.room}`, 
+            new URLSearchParams({ token: data.token }).toString(), {
+            headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        });
+
+        console.log("📡 session.php のレスポンス取得完了");
+
+        if (!response || !response.data || typeof response.data !== "object") {
+            console.error("❌ session.php のレスポンスが JSON ではありません:", response);
+            return;
         }
+
+        if (response.data.error) {
+            console.error("❌ session.php のエラー:", response.data.error);
+            return;
+        }
+
         if (!rooms[data.room]) {
             rooms[data.room] = { players: {} }; // ルームが未定義なら新しく作成
         }
-        
+
+        // 🔹 session.php のプレイヤーデータをサーバーに保存
         response.data.players.forEach(player => {
             if (!rooms[data.room].players[player.id]) {
-                rooms[data.room].players[player.id] = {}; // 🎯 既存データがある場合は保持
+                rooms[data.room].players[player.id] = {}; // 🎯 既存データを保持
             }
-            rooms[data.room].players[player.id].id = player.id;
-            rooms[data.room].players[player.id].username = player.username;
-            rooms[data.room].players[player.id].x = player.x;
-            rooms[data.room].players[player.id].y = player.y;
-            rooms[data.room].players[player.id].mapID = player.mapID;
-            rooms[data.room].players[player.id].socketId = rooms[data.room].players[player.id].socketId || null; // 既存の socketId を保持
+            rooms[data.room].players[player.id] = {
+                id: player.id,
+                username: player.username,
+                x: player.x,
+                y: player.y,
+                mapID: player.mapID,
+                socketId: rooms[data.room].players[player.id].socketId || null // 既存の socketId を保持
+            };
         });
-        
-        // console.log(`✅ サーバーの rooms[${data.room}] を最新データに統合:`, rooms[data.room]);
-        // console.log(`✅ サーバーの rooms[${data.room}] を最新データに更新`, rooms[data.room]);
 
-        // 🎯 指定マップのプレイヤーデータを送信
-        const filteredPlayers = Object.values(rooms[data.room]).filter(p => p.mapID === data.mapID);
-        socket.emit("updateViewMap", { mapID: data.mapID, players: filteredPlayers });
+        // 🎯 指定マップのプレイヤーデータをフィルタリング
+        const filteredPlayers = Object.values(rooms[data.room].players).filter(p => p.mapID === data.mapID);
+
+        console.log(`📡 [DEBUG] updateViewMap 送信: ${filteredPlayers.length} 人のプレイヤーを送信`);
+
+        // 🔹 ルーム全体に `updateViewMap` を送信
+        io.to(data.room).emit("updateViewMap", { mapID: data.mapID, players: filteredPlayers });
 
     } catch (error) {
         console.error("❌ session.php 取得エラー:", error.message);
     }
 });
+
+
 socket.on("playerWarped", (data) => {
     console.log("📡 ワープ情報を受信:", data);
 

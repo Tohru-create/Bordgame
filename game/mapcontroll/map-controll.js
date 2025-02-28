@@ -1,42 +1,6 @@
 let currentMapID = "map-01"; // 実際に自分がいるマップ
 let viewingMapID = "map-01"; // 表示しているマップ（変更可能）
 
-
-// document.addEventListener("DOMContentLoaded", () => {
-//     console.log("🚀 マップ制限の適用");
-//     // 🎯 サーバーから `selectedMaps` を受信
-//     socket.on("updateSelectedMaps", (data) => {
-//         if (!data.selectedMaps) {
-//             console.warn("⚠️ `selectedMaps` データがありません");
-//             return;
-//         }
-
-//         const selectedMaps = data.selectedMaps;
-//         console.log("📡 [DEBUG] 受信した `selectedMaps`:", selectedMaps);
-
-//         // 🎯 `map-container` の中で `selectedMaps` に含まれないマップを非表示にする
-//         document.querySelectorAll("#map-container .map").forEach(map => {
-//             if (!selectedMaps.includes(map.id)) {
-//                 map.style.display = "none";
-//             } else {
-//                 map.style.display = "block";
-//             }
-//         });
-
-//         // 🎯 `map-buttons` の中で `selectedMaps` に含まれないボタンを非表示にする
-//         document.querySelectorAll("#map-buttons button").forEach(button => {
-//             const mapID = button.getAttribute("onclick").match(/'([^']+)'/)[1];
-//             if (!selectedMaps.includes(mapID)) {
-//                 button.style.display = "none";
-//             } else {
-//                 button.style.display = "inline-block";
-//             }
-//         });
-
-//         console.log("✅ `selectedMaps` に基づき、マップとボタンの表示を更新しました");
-//     });
-// });
-
 // 🎯 マップの背景変更関数
 function changeMap(mapID) {
     console.log("🗺️ マップ切り替え:", mapID);
@@ -113,116 +77,24 @@ function changeMap(mapID) {
     }, 50);
 }
 
-
-// // マップの背景変更関数
-// function changeMap(mapID) {
-//     console.log("🗺️ マップ切り替え:", mapID);
-
-//     // 現在のアクティブなマップとボードを取得
-//     const currentMap = document.querySelector(".map.active");
-//     const newMap = document.getElementById(mapID);
-//     const board = document.getElementById("board");
-
-//     if (!currentMap) {
-//         console.error("❌ エラー: アクティブなマップが見つかりません。");
-//         return;
-//     }
-
-//     if (!newMap) {
-//         console.warn("⚠️ 指定されたマップIDが存在しません:", mapID);
-//         return;
-//     }
-
-//     if (currentMap === newMap) {
-//         console.log("🔄 すでに選択されているマップです:", mapID);
-//         return;
-//     }
-
-//     // 🎯 ボードのマップを変更 (WebSocket 経由でサーバーに通知)
-//     viewingMapID = mapID;
-//     console.log(`📌 ボード切り替え: ${mapID}`);
-
-//     socket.emit("viewMap", {
-//         room: roomID,
-//         playerID: userID,
-//         mapID: mapID,
-//         token: playerToken,
-//     });
-
-//     console.log(`🛠️ マップ切り替え発動: ${mapID}`);
-
-//     // **① 他のすべてのマップを非表示にする**
-//     document.querySelectorAll(".map").forEach(map => {
-//         if (map !== currentMap && map !== newMap) {
-//             map.style.display = "none";
-//             map.style.opacity = 0;
-//         }
-//     });
-
-//     // **② 新しいマップの準備**
-//     newMap.style.opacity = 0;  // 透明にする
-//     newMap.style.zIndex = 2;   // 手前に持ってくる
-//     newMap.style.display = "block"; // `display: none` を解除
-
-//     // **③ フェードアウト処理 (0.5秒で透明に)**
-//     let opacity = 1;
-//     let fadeOut = setInterval(() => {
-//         opacity -= 0.05;
-//         currentMap.style.opacity = opacity;
-//         board.style.opacity = opacity;
-
-//         // **0.25秒後にフェードイン開始**
-//         if (opacity <= 0.5) {
-//             clearInterval(fadeOut);
-
-//             // **④ フェードイン処理 (0.5秒で表示)**
-//             let fadeIn = setInterval(() => {
-//                 opacity += 0.05;
-//                 newMap.style.opacity = opacity;
-//                 board.style.opacity = opacity;
-
-//                 if (opacity >= 1) {
-//                     clearInterval(fadeIn);
-//                     newMap.classList.add("active");
-//                     console.log("✅ マップ & ボード変更完了:", mapID);
-
-//                     // **⑤ 古いマップを背景に戻し、完全に非表示**
-//                     setTimeout(() => {
-//                         currentMap.classList.remove("active");
-//                         currentMap.style.zIndex = 1;  // 背面に移動
-//                         currentMap.style.display = "none";  // ✅ 古いマップを非表示
-//                     }, 250);
-//                 }
-//             }, 50);
-//         }
-//     }, 50);
-// }
-
-
 // 🎯 サーバーから指定マップのプレイヤーデータを受信
 socket.on("updateViewMap", (data) => {
     console.log(`📡 WebSocket 受信: マップ ${data.mapID} のプレイヤー情報を更新`);
 
     players = {}; // 初期化
     data.players.forEach(player => {
-        players[player.id] = {
-            id: player.id,
-            username: player.username,
-            x: player.x,   // ✅ 追加
-            y: player.y,   // ✅ 追加
-            mapID: player.mapID
-        };
+        if (player.mapID === viewingMapID) { // ✅ 表示中のマップのプレイヤーのみ格納
+            players[player.id] = {
+                id: player.id,
+                username: player.username,
+                x: player.x,
+                y: player.y,
+                mapID: player.mapID
+            };
+        }
     });
 
-    // 🎯 `currentMapID` を更新（実際にいるマップを正しく保持）
-    if (players[userID]) {
-        currentMapID = players[userID].mapID;
-    }
-
-    console.log(`📌 マップ ${data.mapID} 内のプレイヤー:`);
-    Object.values(players).forEach(player => {
-        console.log(`   🧑‍💻 ${player.username} (ID: ${player.id}) → x: ${player.x}, y: ${player.y}, mapID: ${player.mapID}`);
-    });
+    console.log(`📌 マップ ${data.mapID} 内のプレイヤー:`, Object.values(players));
 
     drawBoard(); // ✅ 変更後のプレイヤー情報で再描画
 });
