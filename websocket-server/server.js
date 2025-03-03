@@ -455,17 +455,6 @@ socket.on("movePlayer", async (data) => {
     }).catch(error => console.error("❌ update_position.php 取得エラー:", error));
 });
 
-socket.on("playerDied", (data) => {
-    const { playerID, roomID } = data;
-    if (!rooms[roomID] || !rooms[roomID].players[playerID]) return;
-    
-    console.log(`💀 サーバー: プレイヤー ${playerID} が死亡`);
-    rooms[roomID].players[playerID].mapID = "map-00";
-    
-    io.to(roomID).emit("playerDied", { playerID });
-    io.to(roomID).emit("playerWarped", { playerID, newMapID: "map-00" });
-    io.to(roomID).emit("receiveCard", { playerID, card: 999 });
-});
 
 // 🎯 カード取得処理
 socket.on("receiveCard", async (data) => {
