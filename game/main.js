@@ -120,12 +120,30 @@ fetch(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${roomID
     }
 });
 
+// 各マップの設定を定義
+const mapConfig = {
+    "map-00": { width: 5, height: 1 }, // 墓地
+    "map-01": { width: 15, height: 10 }, // マス目指定
+    "map-02": { width: 15, height: 10 }, // マス目指定
+    "map-03": { width: 15, height: 10 }, // マス目指定
+    "map-04": { width: 15, height: 10 }, // マス目指定
+    "map-05": { width: 15, height: 10 }, // マス目指定
+    "map-06": { width: 15, height: 10 }, // マス目指定
+    "map-07": { width: 15, height: 10 }, // マス目指定
+    "map-08": { width: 15, height: 10 }, // マス目指定
+    "map-09": { width: 15, height: 10 }, // マス目指定
+};
+
 function drawBoard() {
     const board = document.getElementById("board");
     board.innerHTML = "";
 
-    for (let y = 0; y < 10; y++) {
-        for (let x = 0; x < 15; x++) {
+    // 現在のマップ設定を取得
+    const config = mapConfig[viewingMapID] || mapConfig["default"];
+    const { width, height } = config;
+
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
             const cell = document.createElement("div");
             cell.classList.add("cell");
 
@@ -137,8 +155,6 @@ function drawBoard() {
                     playerElement.textContent = player.username;
 
                     if (player.id === userID) {
-                        console.log("🔍 player.id:", player.id, "タイプ:", typeof player.id);
-                        console.log("🔍 userID:", userID, "タイプ:", typeof userID);
                         playerElement.style.backgroundColor = "blue";
                     } else {
                         playerElement.style.backgroundColor = "red";
@@ -152,6 +168,7 @@ function drawBoard() {
         }
     }
 }
+
 
 function updatePlayerData(callback) {
     fetch(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${roomID}`)
