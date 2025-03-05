@@ -4,7 +4,6 @@ if (!roomID) {
 // ✅ エネルギーを管理する変数
 let playerEnergy = 0;
 const energyMax = 100;
-
 function movePlayer(steps) {
     if (!playerToken || !roomID) {
         console.error("❌ プレイヤートークンまたはルームIDが見つかりません");
@@ -27,7 +26,7 @@ function movePlayer(steps) {
 
         let newX = data.currentPlayer.x;
         let newY = data.currentPlayer.y;
-        let newMapID = data.currentPlayer.mapID || viewingMapID; // ✅ mapID も考慮
+        let newMapID = data.currentPlayer.mapID || viewingMapID; // ✅ `viewingMapID` をフォールバック
         let playerID = data.currentPlayer.username || playerToken;
 
         console.log(`📌 最新の座標取得: x=${newX}, y=${newY}, mapID=${newMapID}, playerID=${playerID}`);
@@ -51,13 +50,14 @@ function movePlayer(steps) {
                 }
             }
         }       
+
         console.log(`📌 新しい座標: x=${newX}, y=${newY}, mapID=${newMapID}`);
 
         const sendData = new URLSearchParams({
             token: playerToken,
             x: newX,
             y: newY,
-            mapID: newMapID, // ✅ mapID も送信
+            mapID: newMapID,
             room: roomID.replace("room_", "")
         });
 
@@ -68,10 +68,7 @@ function movePlayer(steps) {
         fetch(`https://tohru-portfolio.secret.jp/bordgame/game/update_position.php?${sendData.toString()}`, {
             method: "GET"
         })
-        .then(response => {
-            console.log("📡 update_position.php からのレスポンスを受信しました", response);
-            return response.json();
-        })
+        .then(response => response.json())
         .then(saveData => {
             console.log("📡 update_position.php のレスポンス:", saveData);
             if (!saveData.success) {
@@ -87,6 +84,7 @@ function movePlayer(steps) {
                     mapID: newMapID,
                     room: roomID
                 });
+
                 socket.emit("movePlayer", {
                     id: currentPlayer.id,
                     token: playerToken,
@@ -95,7 +93,9 @@ function movePlayer(steps) {
                     mapID: newMapID,
                     room: roomID
                 });
+
                 updatePlayerData(drawBoard);
+                checkTileEvent(newX, newY, newMapID);
             }
         })
         .catch(error => {
@@ -104,6 +104,7 @@ function movePlayer(steps) {
     })
     .catch(error => console.error("❌ session.php 取得エラー:", error));
 }
+
 
 
 // 🎯 WebSocket で `playerMoved` を受け取ったら `session.php` を取得
@@ -135,3 +136,98 @@ socket.on("playerMoved", (data) => {
     console.log("✅ 更新後の players:", JSON.stringify(players, null, 2));
     drawBoard();
 });
+
+
+
+function checkTileEvent(x, y, mapID) {
+    if (!mapConfig[mapID]) {
+        console.error(`❌ mapConfig に ${mapID} のデータがありません`);
+        return;
+    }
+
+    const currentTile = mapConfig[mapID].tiles.find(tile => tile.x === x && tile.y === y);
+    if (currentTile) {
+        console.log(`🚩 移動後のマス: (${x}, ${y}) => タイプ: ${currentTile.type}`);
+        
+        // マスのタイプごとにイベントを発生させる
+        switch (currentTile.type) {
+            case "trap":
+                console.log("⚠️ 罠にかかった！");
+                triggerTrapEvent();
+                break;
+            case "card":
+                console.log("🃏 カードイベント発生！");
+                triggerCardEvent();
+                break;
+            case "rare-card":
+                console.log("🌟 レアカードを入手！");
+                triggerRareCardEvent();
+                break;
+            case "epic-card":
+                console.log("🌟 エピックカードを入手！");
+                triggerEpicCardEvent();
+                break;
+            case "legendary-card":
+                console.log("🌟 レジェンダリーカードを入手！");
+                triggerLegenddaryCardEvent();
+                break;
+            case "mythic":
+                console.log("現象が発生します");
+                triggerMythic();
+                break;
+            case "boss":
+                console.log("👹 ボス戦開始！");
+                triggerBossEvent();
+                break;
+            case "goal":
+                console.log("👹 ボス戦開始！");
+                triggerGoalEvent();
+                break;
+            default:
+                console.log("🔲 通常マス");
+                break;
+        }
+    } else {
+        console.log("🔲 通常マス (タイルデータなし)");
+    }
+}
+
+// イベント処理の関数
+function triggerTrapEvent() {
+    alert("罠にかかった！エネルギーが減少！");
+    playerEnergy = Math.max(playerEnergy - 20, 0);
+    updateEnergy(0);
+}
+
+function triggerCardEvent() {
+    alert("カードを引いた！");
+    // ここにカードイベントの処理を追加
+}
+
+function triggerRareCardEvent() {
+    alert("レアカードを引いた！");
+    // ここにレアカードイベントの処理を追加
+}
+
+function triggerEpicCardEvent() {
+    alert("エピックカードを引いた！");
+    // ここにレアカードイベントの処理を追加
+}
+function triggerLegendaryCardEvent() {
+    alert("レジェンダリーカードを引いた！");
+    // ここにレアカードイベントの処理を追加
+}
+function triggerMythic() {
+    alert("Mythic");
+    // ここにレアカードイベントの処理を追加
+}
+
+function triggerBossEvent() {
+    alert("ボス戦が始まる！");
+    // ここにボス戦の処理を追加
+}
+function triggerGoalEvent() {
+    alert("ボス戦が始まる！");
+    // ここにボス戦の処理を追加
+}
+
