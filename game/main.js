@@ -121,18 +121,7 @@ fetch(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${roomID
 });
 
 // 各マップの設定を定義
-const mapConfig = {
-    "map-00": { width: 5, height: 1 }, // 墓地
-    "map-01": { width: 15, height: 10 }, // マス目指定
-    "map-02": { width: 15, height: 10 }, // マス目指定
-    "map-03": { width: 15, height: 10 }, // マス目指定
-    "map-04": { width: 15, height: 10 }, // マス目指定
-    "map-05": { width: 15, height: 10 }, // マス目指定
-    "map-06": { width: 15, height: 10 }, // マス目指定
-    "map-07": { width: 15, height: 10 }, // マス目指定
-    "map-08": { width: 15, height: 10 }, // マス目指定
-    "map-09": { width: 15, height: 10 }, // マス目指定
-};
+import mapConfig from "./mapconfig.js";
 
 function drawBoard() {
     const board = document.getElementById("board");

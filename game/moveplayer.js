@@ -95,7 +95,6 @@ function movePlayer(steps) {
                     mapID: newMapID,
                     room: roomID
                 });
-        
                 updatePlayerData(drawBoard);
             }
         })
