@@ -18,7 +18,7 @@ const mapConfig = {
             { x: 1, y: 0, type: "normal" },
             { x: 2, y: 0, type: "trap" },
             { x: 3, y: 0, type: "rare-card" },
-            { x: 4, y: 0, type: "goal" }
+            { x: 4, y: 0, type: "revive" }
         ]
     },
     "map-01": {
@@ -173,7 +173,7 @@ const mapConfig = {
         { x: 11, y: 9, type: "card" },
         { x: 12, y: 9, type: "normal" },
         { x: 13, y: 9, type: "normal" },
-        { x: 14, y: 9, type: "goal" }
+        { x: 14, y: 9, type: "boss" }
         ]
     },
     "map-02": {
@@ -328,7 +328,7 @@ const mapConfig = {
         { x: 11, y: 9, type: "normal" },
         { x: 12, y: 9, type: "epic-card" },
         { x: 13, y: 9, type: "rare-card" },
-        { x: 14, y: 9, type: "goal" }
+        { x: 14, y: 9, type: "boss" }
         ]
     },
     "map-03": {
@@ -483,7 +483,7 @@ const mapConfig = {
         { x: 11, y: 9, type: "rare-card" },
         { x: 12, y: 9, type: "trap" },
         { x: 13, y: 9, type: "rare-card" },
-        { x: 14, y: 9, type: "goal" }
+        { x: 14, y: 9, type: "boss" }
         ]
     },
     "map-04": {
@@ -638,7 +638,7 @@ const mapConfig = {
         { x: 11, y: 9, type: "card" },
         { x: 12, y: 9, type: "normal" },
         { x: 13, y: 9, type: "legendary-card" },
-        { x: 14, y: 9, type: "goal" }
+        { x: 14, y: 9, type: "boss" }
         ]
     },
     "map-05": {
@@ -793,7 +793,7 @@ const mapConfig = {
         { x: 11, y: 9, type: "card" },
         { x: 12, y: 9, type: "normal" },
         { x: 13, y: 9, type: "card" },
-        { x: 14, y: 9, type: "goal" }
+        { x: 14, y: 9, type: "boss" }
         ]
     },
     "map-06": {
@@ -948,7 +948,7 @@ const mapConfig = {
         { x: 11, y: 9, type: "rare-card" },
         { x: 12, y: 9, type: "normal" },
         { x: 13, y: 9, type: "card" },
-        { x: 14, y: 9, type: "goal" }
+        { x: 14, y: 9, type: "boss" }
         ]
     },
     "map-07": {
@@ -1103,7 +1103,7 @@ const mapConfig = {
         { x: 11, y: 9, type: "normal" },
         { x: 12, y: 9, type: "epic-card" },
         { x: 13, y: 9, type: "card" },
-        { x: 14, y: 9, type: "goal" }
+        { x: 14, y: 9, type: "boss" }
         ]
     },
     "map-08": {
@@ -1258,7 +1258,7 @@ const mapConfig = {
         { x: 11, y: 9, type: "card" },
         { x: 12, y: 9, type: "normal" },
         { x: 13, y: 9, type: "rare-card" },
-        { x: 14, y: 9, type: "goal" }
+        { x: 14, y: 9, type: "boss" }
         ]
     },
     "map-09": {
@@ -1419,4 +1419,4 @@ const mapConfig = {
 };
 
 
-export default mapConfig; // ✅ `mapConfig` をエクスポート
+window.mapConfig = mapConfig;

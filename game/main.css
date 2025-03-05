@@ -305,3 +305,46 @@ button {
     transform: translateX(-50%);
     background-color: white;
 }
+
+
+
+.tile-start {
+    background-color: green;
+}
+
+.tile-card {
+    background-color: lightblue;
+}
+
+.tile-rare-card {
+    background-color: purple;
+}
+
+.tile-epic-card {
+    background-color: orange;
+}
+
+.tile-legendary-card {
+    background-color: gold;
+}
+
+.tile-normal {
+    background-color: white;
+}
+
+.tile-trap {
+    background-color: red;
+}
+
+.tile-boss {
+    background-color: black;
+    color: white;
+}
+
+.tile-goal {
+    background-color: yellow;
+}
+
+.tile-mythic {
+    background-color: cyan;
+}

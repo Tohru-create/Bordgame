@@ -120,21 +120,24 @@ fetch(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${roomID
     }
 });
 
-// 各マップの設定を定義
-import mapConfig from "./mapconfig.js";
-
 function drawBoard() {
     const board = document.getElementById("board");
     board.innerHTML = "";
 
     // 現在のマップ設定を取得
     const config = mapConfig[viewingMapID] || mapConfig["default"];
-    const { width, height } = config;
+    const { width, height, tiles } = config;
 
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const cell = document.createElement("div");
             cell.classList.add("cell");
+
+            // タイル情報を取得
+            const tile = tiles.find(t => t.x === x && t.y === y);
+            if (tile) {
+                cell.classList.add(`tile-${tile.type}`);
+            }
 
             Object.values(players).forEach(player => {
                 // ✅ 自分が見ているマップと同じマップにいるプレイヤーのみ表示
@@ -157,6 +160,7 @@ function drawBoard() {
         }
     }
 }
+
 
 
 function updatePlayerData(callback) {
