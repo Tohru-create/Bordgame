@@ -138,8 +138,7 @@ socket.on("playerMoved", (data) => {
 });
 
 
-
-function checkTileEvent(x, y, mapID) {
+function checkTileEvent(x, y, mapID, playerID, playerToken) {
     if (!mapConfig[mapID]) {
         console.error(`❌ mapConfig に ${mapID} のデータがありません`);
         return;
@@ -148,40 +147,39 @@ function checkTileEvent(x, y, mapID) {
     const currentTile = mapConfig[mapID].tiles.find(tile => tile.x === x && tile.y === y);
     if (currentTile) {
         console.log(`🚩 移動後のマス: (${x}, ${y}) => タイプ: ${currentTile.type}`);
-        
-        // マスのタイプごとにイベントを発生させる
+
         switch (currentTile.type) {
             case "trap":
                 console.log("⚠️ 罠にかかった！");
-                triggerTrapEvent();
+                triggerTrapEvent(playerID);
                 break;
-            case "card":
-                console.log("🃏 カードイベント発生！");
-                triggerCardEvent();
-                break;
+                case "card":
+                    console.log("🃏 カードイベント発生！");
+                    triggerCardEvent(playerID, playerToken, roomID, "normal"); // 🔧 修正
+                    break;                
             case "rare-card":
                 console.log("🌟 レアカードを入手！");
-                triggerRareCardEvent();
+                triggerCardEvent(playerID, playerToken,roomID,  "rare");
                 break;
             case "epic-card":
                 console.log("🌟 エピックカードを入手！");
-                triggerEpicCardEvent();
+                triggerCardEvent(playerID, playerToken,roomID,  "epic");
                 break;
             case "legendary-card":
                 console.log("🌟 レジェンダリーカードを入手！");
-                triggerLegenddaryCardEvent();
+                triggerCardEvent(playerID, playerToken, roomID, "legendary");
                 break;
             case "mythic":
                 console.log("現象が発生します");
-                triggerMythic();
+                triggerMythic(playerID);
                 break;
             case "boss":
                 console.log("👹 ボス戦開始！");
-                triggerBossEvent();
+                triggerBossEvent(playerID);
                 break;
             case "goal":
-                console.log("👹 ボス戦開始！");
-                triggerGoalEvent();
+                console.log("🏁 ゴール！");
+                triggerGoalEvent(playerID);
                 break;
             default:
                 console.log("🔲 通常マス");
@@ -192,42 +190,71 @@ function checkTileEvent(x, y, mapID) {
     }
 }
 
-// イベント処理の関数
-function triggerTrapEvent() {
+// 罠イベント
+function triggerTrapEvent(playerID) {
     alert("罠にかかった！エネルギーが減少！");
     playerEnergy = Math.max(playerEnergy - 20, 0);
-    updateEnergy(0);
+    updateEnergy(playerID, -20);
 }
 
-function triggerCardEvent() {
-    alert("カードを引いた！");
-    // ここにカードイベントの処理を追加
+// カードイベント (レアリティに応じてランダム取得)
+function triggerCardEvent(playerID, playerToken, roomID, rarity) {
+    if (!window.allCards) {
+        console.error("❌ allCards がロードされていません");
+        return;
+    }
+
+    const filteredCards = Object.entries(window.allCards).filter(([id, card]) => card.rarity === rarity);
+    
+    if (filteredCards.length === 0) {
+        alert("カードが見つかりません");
+        return;
+    }
+
+    const [cardID, randomCard] = filteredCards[Math.floor(Math.random() * filteredCards.length)];
+
+    alert(`${randomCard.name} を獲得！`);
+
+    const requestData = {
+        playerID: userID,
+        token: token,
+        roomID: roomID,
+        cardID: cardID
+    };
+
+    console.log("📤 送信データ:", JSON.stringify(requestData, null, 2)); // JSONの整形表示
+
+    fetch("https://tohru-portfolio.secret.jp/bordgame/game/cardsystem/update_cards.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.text()) // JSONでなくテキストで取得
+    .then(text => {
+        console.log("📥 サーバーレスポンス:", text); // レスポンスの中身を確認
+        return JSON.parse(text);
+    })
+    .then(data => {
+        if (data.success) {
+            console.log(`✅ ${randomCard.name} (ID: ${cardID}) がプレイヤー ${userID} に追加されました！`);
+        } else {
+            console.error("❌ カード更新に失敗:", data.error);
+        }
+    })
+    .catch(error => console.error("❌ サーバーエラー:", error));
 }
 
-function triggerRareCardEvent() {
-    alert("レアカードを引いた！");
-    // ここにレアカードイベントの処理を追加
-}
-
-function triggerEpicCardEvent() {
-    alert("エピックカードを引いた！");
-    // ここにレアカードイベントの処理を追加
-}
-function triggerLegendaryCardEvent() {
-    alert("レジェンダリーカードを引いた！");
-    // ここにレアカードイベントの処理を追加
-}
-function triggerMythic() {
-    alert("Mythic");
-    // ここにレアカードイベントの処理を追加
-}
-
-function triggerBossEvent() {
+// ボス戦
+function triggerBossEvent(playerID) {
     alert("ボス戦が始まる！");
-    // ここにボス戦の処理を追加
-}
-function triggerGoalEvent() {
-    alert("ボス戦が始まる！");
-    // ここにボス戦の処理を追加
 }
 
+// ゴール
+function triggerGoalEvent(playerID) {
+    alert("ゴールに到達！");
+}
+
+// Mythicイベント
+function triggerMythic(playerID) {
+    alert("Mythicイベント発生！");
+}
