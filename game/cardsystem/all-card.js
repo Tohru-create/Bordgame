@@ -1,4 +1,4 @@
-window. allCards = {
+const allCards = {
     "009": { name: "勇者の剣", points: 50, rarity: "normal" },
     "010": { name: "魔法の盾", points: 50, rarity: "normal" },
     "011": { name: "隠れ家の地図", points: 50, rarity: "normal" },
@@ -144,6 +144,12 @@ window. allCards = {
     "999": { name: "ペナルティーカード", points: -500,rarity: "special" },
     "1000": { name: "時空間移動", points: 0,rarity: "special" },
 };
+
+if (typeof window !== "undefined") {
+    window.allCards = allCards;
+  } else if (typeof module !== "undefined" && module.exports) {
+    module.exports = allCards;
+  }
 
 /**
  * データベースからプレイヤーの持っているカードを取得

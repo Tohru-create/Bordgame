@@ -1,51 +1,55 @@
+// window.roomID = roomID; 
+// window.playerToken = token;
+// window.userID = userID;
+// window.username = username;
+// window.hostsettings = hostsettings;
+
 const storyContainer = document.getElementById("story");
 const storyLines = document.querySelectorAll(".story-line");
 let currentLine = 0;
+let isHost = false;
+let room = roomID; // 実際のルームIDを取得する必要あり
 
 function showStory() {
-    storyContainer.style.display = "block"; // ストーリーを表示
+    storyContainer.style.display = "block";
     storyLines.forEach((line, index) => {
-        line.style.display = index === 0 ? "block" : "none"; // 最初の行だけ表示
+        line.style.display = index === 0 ? "block" : "none";
     });
 }
 
-// ストーリーを次の行へ進める関数
 function nextStoryLine() {
     if (currentLine < storyLines.length - 1) {
         storyLines[currentLine].style.display = "none";
         currentLine++;
         storyLines[currentLine].style.display = "block";
 
-        // ホストがクリックしたら、全プレイヤーに現在の行数を送信
-        socket.send(JSON.stringify({ type: "story-progress", line: currentLine }));
+        if (isHost) {
+            socket.emit("story-progress", { room, index: currentLine });
+        }
     } else {
-        // ストーリー終了時にゲーム開始
         storyContainer.style.display = "none";
-        socket.send(JSON.stringify({ type: "story-end" }));
+        if (isHost) {
+            socket.emit("story-end", { room });
+        }
     }
 }
 
-// ホストのみクリックで進める（最初にホスト判定が必要）
 document.addEventListener("click", () => {
     if (isHost) {
         nextStoryLine();
     }
 });
 
-// WebSocket でデータを受信したときの処理
-socket.addEventListener("message", (event) => {
-    const data = JSON.parse(event.data);
-
-    if (data.type === "story-progress") {
-        // 他のプレイヤーのストーリーも同期
-        storyLines[currentLine].style.display = "none";
-        currentLine = data.line;
-        storyLines[currentLine].style.display = "block";
-    } else if (data.type === "story-end") {
-        // ストーリーが終了したらゲーム開始
-        storyContainer.style.display = "none";
-    }
+socket.on("showStory", () => {
+    showStory();
 });
 
-// ゲーム開始時にストーリーを表示
-showStory();
+socket.on("story-progress", (data) => {
+    storyLines[currentLine].style.display = "none";
+    currentLine = data.index;
+    storyLines[currentLine].style.display = "block";
+});
+
+socket.on("story-end", () => {
+    storyContainer.style.display = "none";
+});
