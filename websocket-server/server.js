@@ -110,78 +110,132 @@ io.on("connection", async (socket) => {
     });
 
 const TURN_DURATION = 60000; // 60秒
-socket.on("startGame", async (data) => {
-    console.log("📡 [DEBUG] startGame イベントが発火！", data);
-
+socket.on("startGame", (data) => {
     const { room } = data;
-    if (!room) {
-        console.error("❌ startGame: ルームIDが指定されていません");
-        return;
+    if (!room) return console.error("❌ startGame: ルームIDが指定されていません");
+
+    console.log(`🎮 ルーム ${room} でゲーム開始（ストーリー開始）`);
+
+    if (!rooms[room]) {
+        rooms[room] = { players: {}, storyIndex: 0 };
     }
+    rooms[room].storyIndex = 0;
 
-    console.log(`🎮 ルーム ${room} でゲーム開始`);
-
-    try {
-        const response = await axios.get(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${room}&token=SERVER_ADMIN_TOKEN`);
-        console.log("📡 [DEBUG] session.php のレスポンス:", response.data);
-
-        if (response.data.success) {
-            // 🎯 `rooms[room]` を上書きするのではなく、既存のデータを保持
-            if (!rooms[room]) {
-                rooms[room] = { players: {}, turn: 0, active: true, timer: null, selectedMaps: rooms[room]?.selectedMaps || [] };
-            }
-            
-            // 🎯 `selectedMaps` を保持する（もし `undefined` なら `[]` を設定）
-            rooms[room].selectedMaps = rooms[room].selectedMaps || [];
-
-            response.data.players.forEach(player => {
-                if (!rooms[room].players[player.id]) {
-                    rooms[room].players[player.id] = {};  // もし存在しなければ新規作成
-                }
-                rooms[room].players[player.id] = {
-                    ...rooms[room].players[player.id],  // 既存のデータを保持
-                    hasRolledDice: false,  // 🎲 サイコロを振っていないフラグ
-                    username: player.username
-                };
-            });            
-            try {
-                console.log("📡 [DEBUG] startGame 送信データ:");
-                console.log("📝 roomID:", room);
-                console.log("📝 players:", JSON.stringify(rooms[room].players, null, 2));
-                console.log("📝 selectedMaps:", JSON.stringify(rooms[room].selectedMaps, null, 2));
-
-                io.to(room).emit("mapControlSelectedMaps", { selectedMaps: rooms[room].selectedMaps });
-            
-                io.to(room).emit("updateSelectedMaps", { selectedMaps: rooms[room].selectedMaps });
-
-                io.to(room).emit("updatePlayers", {
-                    roomID: room,
-                    players: Object.values(rooms[room].players),
-                    host: rooms[room].host,
-                    selectedMaps: rooms[room].selectedMaps
-                });                
-
-                io.to(room).emit("startGame", {
-                    roomID: room,
-                    players: rooms[room].players,
-                    selectedMaps: rooms[room].selectedMaps // 🎯 ここを変更
-                });
-
-                console.log("✅ すべての `emit` が完了しました");
-            } catch (error) {
-                console.error("❌ startGame の処理中にエラー発生:", error);
-            }
-            
-            startNewTurn(room);
-        } else {
-            console.error("❌ session.php のレスポンスが success ではありません", response.data);
-        }
-    } catch (error) {
-        console.error("❌ session.php データ取得エラー:", error.message);
-    }
+    io.to(room).emit("showStory");
 });
 
+socket.on("story-progress", (data) => {
+    const { room, index } = data;
+    if (!room || typeof index !== "number") return;
 
+    if (rooms[room]) {
+        rooms[room].storyIndex = index;
+    }
+
+    io.to(room).emit("story-progress", { index });
+});
+
+socket.on("story-end", (data) => {
+    const { room } = data;
+    if (!room) return;
+
+    console.log(`📖 ルーム ${room} のストーリー終了`);
+    startActualGame(room);
+});
+
+function startActualGame(room) {
+    if (!rooms[room]) return console.error(`❌ ルーム ${room} が見つかりません`);
+
+    console.log(`🚀 ルーム ${room} でゲームを開始`);
+    
+    io.to(room).emit("mapControlSelectedMaps", { selectedMaps: rooms[room].selectedMaps });
+    io.to(room).emit("updateSelectedMaps", { selectedMaps: rooms[room].selectedMaps });
+    io.to(room).emit("updatePlayers", {
+        roomID: room,
+        players: Object.values(rooms[room].players),
+        host: rooms[room].host,
+        selectedMaps: rooms[room].selectedMaps
+    });
+    io.to(room).emit("startGame", {
+        roomID: room,
+        players: rooms[room].players,
+        selectedMaps: rooms[room].selectedMaps
+    });
+
+    console.log("✅ すべての `emit` が完了しました");
+}
+
+
+// socket.on("startGame", async (data) => {
+//     console.log("📡 [DEBUG] startGame イベントが発火！", data);
+
+//     const { room } = data;
+//     if (!room) {
+//         console.error("❌ startGame: ルームIDが指定されていません");
+//         return;
+//     }
+
+//     console.log(`🎮 ルーム ${room} でゲーム開始`);
+
+//     try {
+//         const response = await axios.get(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${room}&token=SERVER_ADMIN_TOKEN`);
+//         console.log("📡 [DEBUG] session.php のレスポンス:", response.data);
+
+//         if (response.data.success) {
+//             // 🎯 `rooms[room]` を上書きするのではなく、既存のデータを保持
+//             if (!rooms[room]) {
+//                 rooms[room] = { players: {}, turn: 0, active: true, timer: null, selectedMaps: rooms[room]?.selectedMaps || [] };
+//             }
+            
+//             // 🎯 `selectedMaps` を保持する（もし `undefined` なら `[]` を設定）
+//             rooms[room].selectedMaps = rooms[room].selectedMaps || [];
+
+//             response.data.players.forEach(player => {
+//                 if (!rooms[room].players[player.id]) {
+//                     rooms[room].players[player.id] = {};  // もし存在しなければ新規作成
+//                 }
+//                 rooms[room].players[player.id] = {
+//                     ...rooms[room].players[player.id],  // 既存のデータを保持
+//                     hasRolledDice: false,  // 🎲 サイコロを振っていないフラグ
+//                     username: player.username
+//                 };
+//             });            
+//             try {
+//                 console.log("📡 [DEBUG] startGame 送信データ:");
+//                 console.log("📝 roomID:", room);
+//                 console.log("📝 players:", JSON.stringify(rooms[room].players, null, 2));
+//                 console.log("📝 selectedMaps:", JSON.stringify(rooms[room].selectedMaps, null, 2));
+
+//                 io.to(room).emit("mapControlSelectedMaps", { selectedMaps: rooms[room].selectedMaps });
+            
+//                 io.to(room).emit("updateSelectedMaps", { selectedMaps: rooms[room].selectedMaps });
+
+//                 io.to(room).emit("updatePlayers", {
+//                     roomID: room,
+//                     players: Object.values(rooms[room].players),
+//                     host: rooms[room].host,
+//                     selectedMaps: rooms[room].selectedMaps
+//                 });                
+
+//                 io.to(room).emit("startGame", {
+//                     roomID: room,
+//                     players: rooms[room].players,
+//                     selectedMaps: rooms[room].selectedMaps // 🎯 ここを変更
+//                 });
+
+//                 console.log("✅ すべての `emit` が完了しました");
+//             } catch (error) {
+//                 console.error("❌ startGame の処理中にエラー発生:", error);
+//             }
+            
+//             startNewTurn(room);
+//         } else {
+//             console.error("❌ session.php のレスポンスが success ではありません", response.data);
+//         }
+//     } catch (error) {
+//         console.error("❌ session.php データ取得エラー:", error.message);
+//     }
+// });
 
 // 🎯 新しいターンの開始
 function startNewTurn(room) {
