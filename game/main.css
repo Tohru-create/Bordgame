@@ -21,12 +21,29 @@ body {
     transform: translateX(-50%);
     z-index: 1000; /* 一番上に表示 */
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
 }
 .story-line {
     display: none;  /* 初期状態では全て非表示 */
     opacity: 0;     /* 透明度を 0 にしておく */
     transition: opacity 0.5s ease-in-out; /* フェードイン・アウトを適用 */
     padding: 10px 20px;
+}
+#storyNextButton {
+    display: block;
+    margin: 10px auto;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    opacity: 0; /* 初期状態では非表示 */
+    animation: floatArrow 1.5s infinite ease-in-out; /* 浮遊アニメーション */
+}
+
+@keyframes floatArrow {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0); }
 }
 
 #turnTimerContainer {
