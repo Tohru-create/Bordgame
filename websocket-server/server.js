@@ -125,15 +125,15 @@ socket.on("startGame", (data) => {
 });
 
 socket.on("story-progress", (data) => {
-    const { room, index } = data;
-    if (!room || typeof index !== "number") return;
-
-    if (rooms[room]) {
-        rooms[room].storyIndex = index;
+    console.log(`📡 サーバー: story-progress 受信 - ${data.index}`);
+    
+    // **すでに進んでいる場合は送信しない**
+    if (!rooms[data.room] || rooms[data.room].storyIndex >= data.index) {
+        return;
     }
 
-    // すべてのクライアントに送信
-    io.to(room).emit("story-progress", { index });
+    rooms[data.room].storyIndex = data.index;
+    io.to(data.room).emit("story-progress", { index: data.index });
 });
 
 
