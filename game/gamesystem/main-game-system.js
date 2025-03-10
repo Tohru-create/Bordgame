@@ -23,6 +23,7 @@ let currentTurn = 0;
 let activeRoom = null;
 let turnTimerInterval = null; // 🎯 インターバル管理用変数
 
+
 // 🎮 ゲーム開始
 socket.on("startGame", (data) => {
     if (!data || !data.roomID || !data.players || !data.selectedMaps) {
@@ -54,7 +55,6 @@ socket.on("startGame", (data) => {
     activeRoom = data.roomID;
     document.getElementById("gameStatus").textContent = "🎮 ゲームが開始されました！";
     board.style.display = "grid";
-    document.getElementById("tittlescreen").style.display = "none";
     drawBoard();
 });
 

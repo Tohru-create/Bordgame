@@ -132,8 +132,10 @@ socket.on("story-progress", (data) => {
         rooms[room].storyIndex = index;
     }
 
+    // すべてのクライアントに送信
     io.to(room).emit("story-progress", { index });
 });
+
 
 socket.on("story-end", (data) => {
     const { room } = data;
