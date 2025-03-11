@@ -14,7 +14,6 @@ function nextStoryLine() {
         // 現在の行をフェードアウト
         storyLines[currentLine].style.transition = "opacity 0.5s ease-out";
         storyLines[currentLine].style.opacity = "0";
-        storyNextButton.style.opacity = "0"; // ボタンも一旦消す
 
         setTimeout(() => {
             storyLines[currentLine].style.display = "none";
@@ -64,7 +63,6 @@ socket.on("story-progress", (data) => {
 
     storyLines[currentLine].style.transition = "opacity 0.5s ease-out";
     storyLines[currentLine].style.opacity = "0";
-    storyNextButton.style.opacity = "0"; // ボタンもフェードアウト
 
     setTimeout(() => {
         storyLines[currentLine].style.display = "none";
@@ -112,8 +110,12 @@ socket.on("showStory", () => {
     const storyNextButton = document.getElementById("storyNextButton"); // 矢印ボタン
     
     if (storyContainer && storyLines.length > 0 && storyNextButton) {
-        storyContainer.style.display = "block";
+        storyContainer.style.display = "flex"; // ここを flex に変更
+        storyContainer.style.flexDirection = "column"; // 縦に配置
+        storyContainer.style.justifyContent = "center"; // 縦方向の中央揃え
+        storyContainer.style.alignItems = "center"; // 横方向の中央揃え
         storyContainer.style.opacity = "1"; // 透明度リセット
+        
 
         // **最初の行だけを確実に表示**
         storyLines.forEach((line, index) => {
