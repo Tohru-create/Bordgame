@@ -173,6 +173,10 @@ function checkTileEvent(x, y, mapID, playerID, playerToken) {
                 console.log("現象が発生します");
                 triggerMythic(playerID);
                 break;
+            case "monster":
+                console.log(" 野生の敵とエンカウントした！");
+                triggerMonsterEvent(playerID);
+                break;
             case "boss":
                 console.log("👹 ボス戦開始！");
                 triggerBossEvent(playerID);
@@ -184,6 +188,7 @@ function checkTileEvent(x, y, mapID, playerID, playerToken) {
             default:
                 console.log("🔲 通常マス");
                 break;
+            // モンスターます追加しとけ
         }
     } else {
         console.log("🔲 通常マス (タイルデータなし)");
@@ -192,7 +197,7 @@ function checkTileEvent(x, y, mapID, playerID, playerToken) {
 
 // 罠イベント
 function triggerTrapEvent(playerID) {
-    alert("罠にかかった！エネルギーが減少！");
+    alert("罠にかかった！");
     playerEnergy = Math.max(playerEnergy - 20, 0);
     updateEnergy(playerID, -20);
 }
@@ -242,6 +247,11 @@ function triggerCardEvent(playerID, playerToken, roomID, rarity) {
         }
     })
     .catch(error => console.error("❌ サーバーエラー:", error));
+}
+
+// 雑魚敵戦
+function triggerMonsterEvent(playerID) {
+    alert("戦闘が始まる！");
 }
 
 // ボス戦

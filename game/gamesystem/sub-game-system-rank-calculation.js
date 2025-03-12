@@ -26,7 +26,7 @@ socket.on("gameOver", (data) => {
         row.innerHTML = `
             <td>${index + 1}</td>
             <td>${player.username}</td>
-            <td>${player.totalPoints}</td>
+            <td>${player.totalPoints}万</td>
         `;
         rankingTable.appendChild(row);
     });

@@ -1,11 +1,14 @@
 const storyContainer = document.getElementById("story");
 const storyLines = document.querySelectorAll(".story-line");
 const storyNextButton = document.getElementById("storyNextButton"); // 矢印ボタン
+const skipButton = document.getElementById("Skipbutton"); // スキップボタン
 let currentLine = 0;
 let room = window.roomID;
 let isProcessing = false;
+let isHost = window.hostsettings?.isHost || false;
 
 function nextStoryLine() {
+    if (!isHost) return;
     if (isProcessing) return;
     isProcessing = true;
 
@@ -50,8 +53,18 @@ function nextStoryLine() {
     }
 }
 
-// **ボタンをクリックしたときにストーリーを進める**
-storyContainer.addEventListener("click", nextStoryLine);
+// **ホストのみクリックイベントを登録**
+if (isHost) {
+    storyContainer.addEventListener("click", nextStoryLine);
+}
+
+// **スキップボタンの処理**
+skipButton.addEventListener("click", () => {
+    if (isHost) {
+        socket.emit("story-skip", { room });
+    }
+});
+
 
 socket.on("story-progress", (data) => {
     // console.log(`📡 story-progress 受信: ${data.index} (現在の行: ${currentLine})`);
@@ -79,6 +92,10 @@ socket.on("story-progress", (data) => {
         // console.log(`✅ ストーリー更新: 現在の行 (${currentLine}): ${storyLines[currentLine].textContent}`);
         isProcessing = false;
     }, 500);
+});
+socket.on("story-skip", () => {
+    storyContainer.style.display = "none";
+    socket.emit("story-end", { room });
 });
 
 socket.on("story-end", () => {

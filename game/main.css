@@ -43,6 +43,16 @@ body {
     opacity: 1;
     animation: floatArrow 1.5s infinite ease-in-out;
 }
+#skipButton {
+    position: absolute;
+    top: 10px; /* 上端から10px */
+    right: 10px; /* 右端から10px */
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    z-index: 1101; /* `#story` の上にくるように調整 */
+    cursor: pointer;
+}
 
 
 @keyframes floatArrow {
@@ -364,11 +374,11 @@ button {
 }
 
 .tile-rare-card {
-    background-color: purple;
+    background-color: blue;
 }
 
 .tile-epic-card {
-    background-color: orange;
+    background-color: purple;
 }
 
 .tile-legendary-card {
@@ -389,9 +399,9 @@ button {
 }
 
 .tile-goal {
-    background-color: yellow;
+    background-color: chocolate;
 }
 
 .tile-mythic {
-    background-color: cyan;
+    background-color: pink;
 }
