@@ -49,9 +49,13 @@ function movePlayer(steps) {
                     else if (newY > 0) newY--; // 前の行へ移動
                 }
             }
-        }       
-
+        }    
         console.log(`📌 新しい座標: x=${newX}, y=${newY}, mapID=${newMapID}`);
+        if (newMapID === "map-00" && newX > 4) {
+            console.log("指定の値を超えました")
+            newX = 4;
+            newY = 0;
+        }
 
         const sendData = new URLSearchParams({
             token: playerToken,
