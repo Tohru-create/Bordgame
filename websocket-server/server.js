@@ -145,12 +145,13 @@ socket.on("story-end", (data) => {
     startActualGame(room);
 });
 
-socket.on("story-end", (data) => {
+socket.on("story-skip", (data) => {
     const { room } = data;
     if (!room) return;
 
-    console.log(`📖 ルーム ${room} のストーリー終了`);
-    startActualGame(room);
+    console.log(`🚀 ストーリーがスキップされました（ルーム: ${room}）`);
+    io.to(room).emit("story-skip"); // 全プレイヤーにスキップ通知
+    startActualGame(room); // 即ゲーム開始
 });
 
 function startActualGame(room) {

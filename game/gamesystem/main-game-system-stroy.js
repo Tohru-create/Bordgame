@@ -5,7 +5,6 @@ const skipButton = document.getElementById("Skipbutton"); // スキップボタ�
 let currentLine = 0;
 let room = window.roomID;
 let isProcessing = false;
-let isHost = window.hostsettings?.isHost || false;
 
 function nextStoryLine() {
     if (!isHost) return;
@@ -65,6 +64,10 @@ skipButton.addEventListener("click", () => {
     }
 });
 
+socket.on("story-skip", () => {
+    storyContainer.style.display = "none";
+    socket.emit("story-end", { room });
+});
 
 socket.on("story-progress", (data) => {
     // console.log(`📡 story-progress 受信: ${data.index} (現在の行: ${currentLine})`);
@@ -105,6 +108,7 @@ socket.on("story-end", () => {
 
     setTimeout(() => {
         storyContainer.style.display = "none";
+        skipButton.style.display = "none";
     }, 500);
 });
 
