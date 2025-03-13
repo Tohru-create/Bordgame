@@ -222,7 +222,7 @@ function triggerCardEvent(playerID, playerToken, roomID, rarity) {
 
     const [cardID, randomCard] = filteredCards[Math.floor(Math.random() * filteredCards.length)];
 
-    alert(`${randomCard.name} を獲得！`);
+    console.log(`${randomCard.name} を獲得！`);
 
     const requestData = {
         playerID: userID,
@@ -246,6 +246,11 @@ function triggerCardEvent(playerID, playerToken, roomID, rarity) {
     .then(data => {
         if (data.success) {
             console.log(`✅ ${randomCard.name} (ID: ${cardID}) がプレイヤー ${userID} に追加されました！`);
+            if (window.playCardAnimation) {
+                window.playCardAnimation(randomCard);
+            } else {
+                console.error("❌ playCardAnimation が見つかりません");
+            }
         } else {
             console.error("❌ カード更新に失敗:", data.error);
         }

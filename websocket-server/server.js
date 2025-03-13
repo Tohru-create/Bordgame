@@ -109,7 +109,7 @@ io.on("connection", async (socket) => {
         
     });
 
-const TURN_DURATION = 60000; // 60秒
+const TURN_DURATION = 30000; // 60秒
 socket.on("startGame", (data) => {
     const { room } = data;
     if (!room) return console.error("❌ startGame: ルームIDが指定されていません");
@@ -250,10 +250,8 @@ function endTurn(room) {
     setTimeout(() => {
         console.log(`🔄 次のターンを開始`);
         startNewTurn(room);
-    }, 5000); // 🔄 5秒待ってから次のターン開始
+    }, 2000); // 🔄 5秒待ってから次のターン開始
 }
-
-
 
 
 // 🎯 マップ切り替え
