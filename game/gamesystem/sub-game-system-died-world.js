@@ -1,4 +1,15 @@
 console.log("死後の世界.jsがロードされました");
+let currentPlayerMap = {};
+function checkTileEvent(x, y, mapID, playerID) {
+    currentPlayerMap[playerID] = mapID; // 最新のマップを記録
+    console.log(`📌 ${playerID} の現在マップ更新: ${mapID}`);
+
+    const currentTile = mapConfig[mapID].tiles.find(tile => tile.x === x && tile.y === y);
+    if (currentTile) {
+        console.log(`🚩 ${playerID} のマスイベント: (${x}, ${y}) => タイプ: ${currentTile.type}`);
+    }
+}
+
 
 // HPが0になったときの処理
 function checkDeath(playerID, roomID) {
@@ -15,12 +26,24 @@ function checkDeath(playerID, roomID) {
 
 // 死亡処理
 function handlePlayerDeath(playerID, roomID) {
-    console.log(`💀 handlePlayerDeath 実行: playerID=${playerID}, roomID=${roomID}`);  // ← デバッグ用ログ追加
+    console.log(`💀 handlePlayerDeath 実行: playerID=${playerID}, roomID=${roomID}`);
+    
+    console.log(`🔍 ${playerID} の現在のマップ情報:`, currentPlayerMap);
+
+    if (currentPlayerMap[playerID]) {
+        playerDeathData[playerID] = currentPlayerMap[playerID];
+        console.log(`📝 ${playerID} の死亡マップ記録: ${playerDeathData[playerID]}`);
+    } else {
+        console.error(`❌ ${playerID} のマップ情報が取得できません (currentPlayerMap のデータ: ${JSON.stringify(currentPlayerMap)})`);
+    }
+
+    // 既存の処理
     socket.emit("playerDied", { playerID, roomID });
     warpToGraveyard(playerID, roomID);
     socket.emit("receiveCard", { playerID, roomID, card: 999 });
     saveCardForPlayer(playerID, roomID, 999);
 }
+
 
 // プレイヤーを墓地 (map-00) にワープさせ、座標を (0,0) にリセット
 function warpToGraveyard(playerID, roomID) {
