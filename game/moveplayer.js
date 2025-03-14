@@ -123,9 +123,6 @@ socket.on("playerMoved", (data) => {
         return;
     }
 
-    // **ログでデータの変化を詳細に確認**
-    console.log(`🔍 players[${data.id}] 変更前:`, JSON.stringify(players[data.id], null, 2));
-
     const playersArray = Object.values(players);
     const playerData = playersArray.find(p => p.id === data.id);
     if (!playerData) {
@@ -157,10 +154,10 @@ function checkTileEvent(x, y, mapID, playerID, playerToken) {
                 console.log("⚠️ 罠にかかった！");
                 triggerTrapEvent(playerID);
                 break;
-                case "card":
-                    console.log("🃏 カードイベント発生！");
-                    triggerCardEvent(playerID, playerToken, roomID, "normal"); // 🔧 修正
-                    break;                
+            case "card":
+                console.log("🃏 カードイベント発生！");
+                triggerCardEvent(playerID, playerToken, roomID, "normal"); // 🔧 修正
+                break;                
             case "rare-card":
                 console.log("🌟 レアカードを入手！");
                 triggerCardEvent(playerID, playerToken,roomID,  "rare");
@@ -172,6 +169,10 @@ function checkTileEvent(x, y, mapID, playerID, playerToken) {
             case "legendary-card":
                 console.log("🌟 レジェンダリーカードを入手！");
                 triggerCardEvent(playerID, playerToken, roomID, "legendary");
+                break;
+            case "revive-control":
+                console.log("プレイヤーを蘇生します");
+                triggerRevival(userID, roomID)
                 break;
             case "mythic":
                 console.log("現象が発生します");
@@ -266,6 +267,26 @@ function triggerMonsterEvent(playerID) {
 // ボス戦
 function triggerBossEvent(playerID) {
     alert("ボス戦が始まる！");
+}
+
+// プレイヤー復活判定
+function triggerRevival(userID, roomID) {
+    console.log(`🟢 プレイヤー ${userID} が復活ポイントに到達！`);
+
+    if (!playerDeathData[userID]) {
+        console.error("❌ 復活先データが存在しません");
+        return;
+    }
+
+    const originalMap = playerDeathData[playerID].map;
+    let reviveTile = mapConfig[originalMap].tiles.find(tile => tile.type === "revive");
+
+    if (!reviveTile) {
+        console.error(`❌ ${originalMap} に revive タイルが存在しません`);
+        return;
+    }
+
+    console.log(`✅ 復活判定OK: map=${originalMap}, x=${reviveTile.x}, y=${reviveTile.y}`);
 }
 
 // ゴール
