@@ -9,7 +9,7 @@ function playCardAnimation(card) {
         animationContainer.classList.add("fade-out");
         setTimeout(() => {
             document.body.removeChild(animationContainer);
-        }, 1000);
-    }, 2000);
+        }, 700);
+    }, 800);
 }
 window.playCardAnimation = playCardAnimation;
