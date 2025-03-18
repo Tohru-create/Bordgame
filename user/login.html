@@ -5,15 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ゲームルーム作成 / 参加</title>
     <link rel="stylesheet" href="login.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comforter+Brush&family=Fredericka+the+Great&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="tittleSection">
-        <h1>ようこそ</h1>
         <h1>I</h1>
+        <video autoplay muted loop id="backgroundVideo">
+            <source src="/img/video/opening_video_test.mp4" type="video/mp4">
+        </video>
+        <button id="newGame">
+            Start Game
+        </button>
     </div>
 
-    <!-- NewGameボタン -->
-    <button id="newGame">Start New Game</button>
 
     <!-- ルームID表示 -->
     <div id="roomSection" style="display: none;">
