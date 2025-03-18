@@ -87,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🎯 NewGame（新しいゲームルームを作成）
     newGameBtn.addEventListener("click", () => {
         // console.log("🎮 NewGame ボタンが押されました");
-
         fetch("newgame.php", { method: "POST" })
         .then(response => response.json())
         .then(data => {
@@ -114,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("inviteLink").href = inviteURL;
                 roomSection.style.display = "block";
                 usernameSection.style.display = "block";
+                tittleSection.style.display = "none";
             } else {
                 console.error("エラー: " + data.error);
             }

@@ -28,26 +28,34 @@ function checkDeath(playerID, roomID) {
 function handlePlayerDeath(playerID, roomID) {
     console.log(`💀 handlePlayerDeath 実行: playerID=${playerID}, roomID=${roomID}`);
     
-    console.log(`🔍 ${playerID} の現在のマップ情報:`, currentPlayerMap);
-    console.log(`🔍 playerID の型:`, typeof playerID);
-
     if (!playerID) {
         console.error(`❌ playerID が undefined です！`);
         return;
     }
 
-    playerID = String(playerID); // playerID を明示的に文字列に変換
+    // `currentPlayerMap` のデータを事前に確認
+    console.log(`📌 handlePlayerDeath 実行前の currentPlayerMap:`, JSON.stringify(currentPlayerMap));
 
-    if (currentPlayerMap[playerID]) {
-        playerDeathData[playerID] = currentPlayerMap[playerID];
+    // currentPlayerMap が未定義の場合の処理
+    if (!currentPlayerMap || typeof currentPlayerMap !== "object") {
+        console.error(`❌ currentPlayerMap が未定義、または無効なデータです。`);
+        return;
+    }
 
-        // ✅ `localStorage` に死亡前のマップを保存
-        localStorage.setItem("lastMapBeforeDie", playerDeathData[playerID]);
+    const playerKey = String(playerID); // playerIDを文字列に統一
+    console.log(`🔍 playerKey の確認: ${playerKey}`);
 
-        console.log(`📝 ${playerID} の死亡マップ記録: ${playerDeathData[playerID]}`);
-        console.log(`💾 localStorage に保存: lastMapBeforeDie = ${playerDeathData[playerID]}`);
+    if (playerKey in currentPlayerMap) {
+        // プレイヤーが死ぬ直前のマップ情報を記録
+        playerDeathData[playerKey] = currentPlayerMap[playerKey];
+
+        // sessionStorage に保存
+        sessionStorage.setItem("lastMapBeforeDie", playerDeathData[playerKey]);
+
+        console.log(`📝 ${playerKey} の死亡マップ記録: ${playerDeathData[playerKey]}`);
+        console.log(`💾 sessionStorage に保存: lastMapBeforeDie = ${playerDeathData[playerKey]}`);
     } else {
-        console.error(`❌ ${playerID} のマップ情報が取得できません (currentPlayerMap のデータ: ${JSON.stringify(currentPlayerMap)})`);
+        console.error(`❌ ${playerKey} のマップ情報が取得できません (currentPlayerMap のデータ: ${JSON.stringify(currentPlayerMap)})`);
     }
 
     // 既存の処理
@@ -56,8 +64,6 @@ function handlePlayerDeath(playerID, roomID) {
     socket.emit("receiveCard", { playerID, roomID, card: 999 });
     saveCardForPlayer(playerID, roomID, 999);
 }
-
-
 
 // プレイヤーを墓地 (map-00) にワープさせ、座標を (0,0) にリセット
 function warpToGraveyard(playerID, roomID) {
