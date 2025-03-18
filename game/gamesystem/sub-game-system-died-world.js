@@ -40,7 +40,12 @@ function handlePlayerDeath(playerID, roomID) {
 
     if (currentPlayerMap[playerID]) {
         playerDeathData[playerID] = currentPlayerMap[playerID];
+
+        // ✅ `localStorage` に死亡前のマップを保存
+        localStorage.setItem("lastMapBeforeDie", playerDeathData[playerID]);
+
         console.log(`📝 ${playerID} の死亡マップ記録: ${playerDeathData[playerID]}`);
+        console.log(`💾 localStorage に保存: lastMapBeforeDie = ${playerDeathData[playerID]}`);
     } else {
         console.error(`❌ ${playerID} のマップ情報が取得できません (currentPlayerMap のデータ: ${JSON.stringify(currentPlayerMap)})`);
     }
@@ -51,6 +56,7 @@ function handlePlayerDeath(playerID, roomID) {
     socket.emit("receiveCard", { playerID, roomID, card: 999 });
     saveCardForPlayer(playerID, roomID, 999);
 }
+
 
 
 // プレイヤーを墓地 (map-00) にワープさせ、座標を (0,0) にリセット

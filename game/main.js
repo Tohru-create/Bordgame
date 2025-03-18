@@ -46,7 +46,6 @@ socket.on("connect", () => {
 
 // 🎯 プレイヤー情報
 let players = {};
-let playerSizes = {}; 
 let currentPlayer = null; 
 
 const board = document.getElementById("board");
@@ -78,11 +77,9 @@ fetch(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${roomID
     console.log("📌 session.php のレスポンス:", data);
     if (data.success) {
         players = {};
-        playerSizes = {}; 
 
         data.players.forEach(player => {
             players[player.id] = player;
-            playerSizes[player.id] = player.size || "normal"; 
         });
 
         currentPlayer = data.currentPlayer;
@@ -94,7 +91,7 @@ fetch(`https://tohru-portfolio.secret.jp/bordgame/game/session.php?room=${roomID
 
         console.log("✅ 自分のプレイヤーデータ:", currentPlayer);
         console.log("✅ 現在の全プレイヤーデータ:", players);
-        console.log("✅ プレイヤーサイズデータ:", playerSizes);
+
 
         let hasRegistered = sessionStorage.getItem("hasRegistered") === "true"; // 🎯 ここで sessionStorage を利用
 

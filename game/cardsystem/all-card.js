@@ -141,7 +141,7 @@ const allCards = {
     "147": { name: "死神の微笑", points: 100, rarity: "legendary" },
     "148": { name: "運命の輪", points: 100, rarity: "legendary" },
     "149": { name: "太陽神の加護", points: 100, rarity: "legendary" },
-    "150": { name: "古のカード", points: 300, rarity: "mythic" },
+    "150": { name: "メタトロン", points: 300, rarity: "mythic" },
 
     "999": { name: "ペナルティーカード", points: -300,rarity: "special" },
     "1000": { name: "時空間移動", points: 0,rarity: "special" },
