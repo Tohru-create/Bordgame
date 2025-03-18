@@ -5,7 +5,6 @@ const socket = io("https://bordgame.onrender.com", {
 document.addEventListener("DOMContentLoaded", () => {
     // 🎯 リロード時に `sessionStorage` をクリアする処理
     if (sessionStorage.getItem("reloadFlag")) {
-        // console.log("🔄 ページがリロードされたため、sessionStorage をクリアします");
         sessionStorage.clear();  // 全ての `sessionStorage` データを消去
         sessionStorage.removeItem("reloadFlag"); // フラグを削除
     }
