@@ -27,9 +27,10 @@ function movePlayer(steps) {
         let newX = data.currentPlayer.x;
         let newY = data.currentPlayer.y;
         let newMapID = data.currentPlayer.mapID || viewingMapID; // ✅ `viewingMapID` をフォールバック
-        let playerID = data.currentPlayer.username || playerToken;
+        let playerID = data.currentPlayer.id || String(playerToken);
 
         console.log(`📌 最新の座標取得: x=${newX}, y=${newY}, mapID=${newMapID}, playerID=${playerID}`);
+        playerID = String(playerID); // playerID を明示的に文字列に変換
 
         for (let i = 0; i < Math.abs(steps); i++) {
             if (steps > 0) {
@@ -99,7 +100,7 @@ function movePlayer(steps) {
                 });
 
                 updatePlayerData(drawBoard);
-                checkTileEvent(newX, newY, newMapID);
+                checkTileEvent(newX, newY, newMapID, playerID);
             }
         })
         .catch(error => {

@@ -29,6 +29,14 @@ function handlePlayerDeath(playerID, roomID) {
     console.log(`💀 handlePlayerDeath 実行: playerID=${playerID}, roomID=${roomID}`);
     
     console.log(`🔍 ${playerID} の現在のマップ情報:`, currentPlayerMap);
+    console.log(`🔍 playerID の型:`, typeof playerID);
+
+    if (!playerID) {
+        console.error(`❌ playerID が undefined です！`);
+        return;
+    }
+
+    playerID = String(playerID); // playerID を明示的に文字列に変換
 
     if (currentPlayerMap[playerID]) {
         playerDeathData[playerID] = currentPlayerMap[playerID];
