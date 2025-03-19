@@ -1,22 +1,13 @@
 console.log("死後の世界.jsがロードされました");
-let currentPlayerMap = {};
-function checkTileEvent(x, y, mapID, playerID) {
-    currentPlayerMap[playerID] = mapID; // 最新のマップを記録
-    console.log(`📌 ${playerID} の現在マップ更新: ${mapID}`);
-
-    const currentTile = mapConfig[mapID].tiles.find(tile => tile.x === x && tile.y === y);
-    if (currentTile) {
-        console.log(`🚩 ${playerID} のマスイベント: (${x}, ${y}) => タイプ: ${currentTile.type}`);
-    }
-}
-
+let currentPlayerMap = {};  // プレイヤーの最新のマップ情報
+let playerDeathData = {};   // 死亡時のマップ情報を保存
 
 // HPが0になったときの処理
 function checkDeath(playerID, roomID) {
     fetch(`https://tohru-portfolio.secret.jp/bordgame/game/gamesystem_php/heart_controll.php?id=${playerID}&roomID=${roomID}`)
         .then(response => response.json())
         .then(data => {
-            console.log("🔍 HPデータ取得:", data);  // ← HPの値を確認
+            console.log("🔍 HPデータ取得:", data);
             if (data.status === "success" && data.hp <= 0) {
                 handlePlayerDeath(playerID, roomID);
             }
@@ -24,8 +15,8 @@ function checkDeath(playerID, roomID) {
         .catch(error => console.error("❌ Error fetching HP:", error));
 }
 
-// 死亡処理
-function handlePlayerDeath(playerID, roomID) {
+// 🎯 死亡処理
+async function handlePlayerDeath(playerID, roomID) {
     console.log(`💀 handlePlayerDeath 実行: playerID=${playerID}, roomID=${roomID}`);
     
     if (!playerID) {
@@ -33,29 +24,27 @@ function handlePlayerDeath(playerID, roomID) {
         return;
     }
 
-    // `currentPlayerMap` のデータを事前に確認
     console.log(`📌 handlePlayerDeath 実行前の currentPlayerMap:`, JSON.stringify(currentPlayerMap));
 
-    // currentPlayerMap が未定義の場合の処理
-    if (!currentPlayerMap || typeof currentPlayerMap !== "object") {
-        console.error(`❌ currentPlayerMap が未定義、または無効なデータです。`);
-        return;
-    }
-
-    const playerKey = String(playerID); // playerIDを文字列に統一
+    const playerKey = String(playerID);
     console.log(`🔍 playerKey の確認: ${playerKey}`);
 
-    if (playerKey in currentPlayerMap) {
-        // プレイヤーが死ぬ直前のマップ情報を記録
-        playerDeathData[playerKey] = currentPlayerMap[playerKey];
+    // **死亡前のマップを取得するが、currentPlayerMap を上書きしない**
+    let lastMap = currentPlayerMap[playerKey];
 
-        // sessionStorage に保存
-        sessionStorage.setItem("lastMapBeforeDie", playerDeathData[playerKey]);
+    // `window.latestPlayerData` にデータがある場合はそちらを優先
+    if (!lastMap && window.latestPlayerData && window.latestPlayerData[playerKey]) {
+        lastMap = window.latestPlayerData[playerKey].mapID;  // 🎯 取得のみ、代入しない
+        console.log(`🗺️ ${playerKey} の死亡直前のマップを updatePlayers から取得: ${lastMap}`);
+    }
 
-        console.log(`📝 ${playerKey} の死亡マップ記録: ${playerDeathData[playerKey]}`);
-        console.log(`💾 sessionStorage に保存: lastMapBeforeDie = ${playerDeathData[playerKey]}`);
+    if (lastMap) {
+        console.log(`📝 ${playerKey} の死亡直前のマップ: ${lastMap}`);
+        playerDeathData[playerKey] = lastMap;
+        sessionStorage.setItem("lastMapBeforeDie", lastMap);
+        console.log(`💾 sessionStorage に保存: lastMapBeforeDie = ${lastMap}`);
     } else {
-        console.error(`❌ ${playerKey} のマップ情報が取得できません (currentPlayerMap のデータ: ${JSON.stringify(currentPlayerMap)})`);
+        console.error(`❌ ${playerKey} のマップ情報が取得できません。`);
     }
 
     // 既存の処理
@@ -65,27 +54,26 @@ function handlePlayerDeath(playerID, roomID) {
     saveCardForPlayer(playerID, roomID, 999);
 }
 
-// プレイヤーを墓地 (map-00) にワープさせ、座標を (0,0) にリセット
+// 🎯 プレイヤーを墓地 (map-00) にワープさせ、座標を (0,0) にリセット
 function warpToGraveyard(playerID, roomID) {
     console.log(`🚀 墓地へワープ: playerID=${playerID}, roomID=${roomID}`);
     
-    // データベースの座標を更新
     updatePlayerPosition(playerID, 0, 0, "map-00", roomID);
     
     socket.emit("playerWarped", {
         room: roomID,
         playerID: playerID,
         newMapID: "map-00",
-        x: 0, // 座標リセット
-        y: 0, // 座標リセット
+        x: 0,
+        y: 0,
         token: window.playerToken
     });
     
-    updatePlayerMap("map-00", 0, 0); // マップと座標更新
+    updatePlayerMap(playerID, "map-00");
     changeMap("map-00");
 }
 
-// プレイヤーの位置をデータベースに更新
+// 🎯 プレイヤーの位置をデータベースに更新
 function updatePlayerPosition(playerID, newX, newY, newMapID, roomID) {
     const sendData = new URLSearchParams({
         token: window.playerToken,
@@ -120,6 +108,7 @@ function updatePlayerPosition(playerID, newX, newY, newMapID, roomID) {
     .catch(error => console.error("❌ update_position.php 取得エラー:", error));
 }
 
+// 🎯 プレイヤーの死亡時にカードを保存
 function saveCardForPlayer(playerID, roomID, cardID) {
     console.log(`🃏 カード ${cardID} をプレイヤー ${playerID} に保存`);
     

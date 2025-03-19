@@ -204,6 +204,7 @@ socket.on("updatePlayers", (data) => {
         };
     });
 
+    window.latestPlayerData = players;
     console.log("✅ players 更新完了:", players);
     drawBoard();
 });

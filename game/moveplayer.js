@@ -270,15 +270,26 @@ function triggerBossEvent(playerID) {
 }
 
 // プレイヤー復活判定
+// 🎯 プレイヤー復活処理
 function triggerRevival(userID, roomID) {
     console.log(`🟢 プレイヤー ${userID} が復活ポイントに到達！`);
 
-    if (!playerDeathData[userID]) {
-        console.error("❌ 復活先データが存在しません");
+    // **死亡前のマップを取得**
+    const originalMap = sessionStorage.getItem("lastMapBeforeDie");
+
+    if (!originalMap) {
+        console.error(`❌ プレイヤー ${userID} の死亡前マップが取得できません`);
         return;
     }
 
-    const originalMap = playerDeathData[playerID].map;
+    console.log(`📌 ${userID} の死亡前のマップ: ${originalMap}`);
+
+    // **復活地点（revive タイル）を取得**
+    if (!mapConfig[originalMap]) {
+        console.error(`❌ ${originalMap} のマップデータが mapConfig に存在しません`);
+        return;
+    }
+
     let reviveTile = mapConfig[originalMap].tiles.find(tile => tile.type === "revive");
 
     if (!reviveTile) {
@@ -287,7 +298,24 @@ function triggerRevival(userID, roomID) {
     }
 
     console.log(`✅ 復活判定OK: map=${originalMap}, x=${reviveTile.x}, y=${reviveTile.y}`);
+
+    // プレイヤー移動
+    movePlayer(userID, reviveTile.x, reviveTile.y, originalMap, roomID);
+
+
+    // **全プレイヤーに位置更新を通知**
+    socket.emit("movePlayer", {
+        id: userID,
+        token: window.playerToken,
+        x: reviveTile.x,
+        y: reviveTile.y,
+        mapID: originalMap,
+        room: roomID
+    });
+
+    console.log(`🚀 ${userID} を ${originalMap} の復活地点 (${reviveTile.x}, ${reviveTile.y}) に移動！`);
 }
+
 
 // ゴール
 function triggerGoalEvent(playerID) {
